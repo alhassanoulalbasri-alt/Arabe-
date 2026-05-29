@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="cache-control" content="no-cache">
+<title>LexiArabe Pro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--gold:#C9A84C;--dark:#0A0E1A;--dark2:#111827;--dark3:#1C2535;--emerald:#0D5C3A;--text:#E8DFC8;--muted:#8A9BAE}
+body{font-family:sans-serif;background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden}
+#splash{position:fixed;inset:0;background:linear-gradient(145deg,var(--dark),var(--emerald),var(--dark));display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;transition:opacity 0.5s}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{width:100px;height:100px;background:linear-gradient(135deg,var(--gold),#8B6914);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:44px;color:var(--dark);margin-bottom:20px}
+.splash-title{font-size:28px;font-weight:900;color:var(--gold);margin-bottom:6px}
+.splash-sub{font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:30px}
+.splash-bar{width:180px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.splash-fill{height:100%;background:var(--gold);border-radius:2px;width:0;animation:fill 0.8s ease forwards}
+@keyframes fill{to{width:100%}}
+#app{display:none;flex-direction:column;min-height:100vh}
+#app.show{display:flex}
+.topbar{background:linear-gradient(135deg,#083D27,var(--dark2));padding:12px 16px;border-bottom:1px solid rgba(201,168,76,0.2);position:sticky;top:0;z-index:100}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brand{display:flex;align-items:center;gap:8px}
+.brand-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--gold),#8B6914);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--dark)}
+.brand-name{font-size:17px;font-weight:900;color:var(--gold)}
+.brand-badge{font-size:9px;color:var(--gold);border:1px solid var(--gold);padding:2px 5px;border-radius:3px}
+.prem-btn{background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;padding:7px 12px;border-radius:18px;font-size:11px;font-weight:700;cursor:pointer}
+.search-wrap{position:relative}
+.search-inp{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:9px 12px 9px 36px;color:var(--text);font-size:13px;outline:none}
+.search-ico{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px}
+.tabs{display:flex;background:var(--dark2);border-bottom:1px solid rgba(255,255,255,0.05);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:11px 16px;font-size:12px;color:var(--muted);cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;white-space:nowrap;font-weight:500}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.alpha-bar{display:flex;gap:5px;padding:8px 12px;background:var(--dark2);overflow-x:auto;scrollbar-width:none}
+.alpha-bar::-webkit-scrollbar{display:none}
+.alpha-btn{flex-shrink:0;width:32px;height:32px;border-radius:7px;background:var(--dark3);border:1px solid rgba(255,255,255,0.07);color:var(--text);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.alpha-btn.all{width:auto;padding:0 10px;font-size:11px;font-weight:600}
+.alpha-btn.active{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+.content{flex:1;padding:10px 14px 80px;overflow-y:auto;max-height:calc(100vh - 170px)}
+.letter-hdr{display:flex;align-items:center;gap:10px;padding:8px 0;margin-bottom:6px}
+.letter-big{font-size:36px;color:var(--gold);line-height:1}
+.letter-info .letter-name{font-size:13px;font-weight:600}
+.letter-info .letter-count{font-size:11px;color:var(--muted)}
+.letter-line{flex:1;height:1px;background:linear-gradient(90deg,var(--gold),transparent)}
+.word-card{background:var(--dark3);border:1px solid rgba(255,255,255,0.05);border-radius:13px;padding:12px 14px;margin-bottom:8px;cursor:pointer;position:relative;overflow:hidden}
+.word-card.expanded{border-color:rgba(201,168,76,0.3)}
+.word-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--gold),#0D5C3A);opacity:0}
+.word-card.expanded::before{opacity:1}
+.wc-top{display:flex;align-items:center;justify-content:space-between}
+.w-arabic{font-size:24px;color:var(--gold);direction:rtl}
+.w-phonetic{font-size:11px;color:var(--muted);font-style:italic}
+.w-badges{display:flex;gap:5px;align-items:center}
+.badge{font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(45,92,173,0.3);color:#7BA3E0;border:1px solid rgba(45,92,173,0.3)}
+.fav-btn{background:none;border:none;cursor:pointer;font-size:17px}
+.wc-trans{display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)}
+.word-card.expanded .wc-trans{display:block}
+.trans-row{display:flex;gap:6px;margin-bottom:5px;font-size:12px}
+.trans-flag{color:var(--muted);font-weight:700;min-width:22px}
+.trans-fr{color:#90CDF4}
+.trans-en{color:#9AE6B4}
+.lock-box{background:linear-gradient(135deg,rgba(201,168,76,0.08),var(--dark3));border:2px dashed rgba(201,168,76,0.35);border-radius:12px;padding:16px;text-align:center;margin-bottom:8px}
+.lock-box button{background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;border-radius:8px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px}
+.phrase-card{background:linear-gradient(135deg,rgba(13,92,58,0.1),var(--dark3));border:1px solid rgba(13,92,58,0.25);border-radius:13px;padding:14px;margin-bottom:10px}
+.phrase-arabic{font-size:20px;color:var(--gold);direction:rtl;text-align:right;margin-bottom:8px;line-height:1.6}
+.phrase-trans{font-size:11px;margin-bottom:3px}
+.phrase-cat{font-size:10px;font-weight:700;background:rgba(13,92,58,0.35);color:#5FB98A;padding:2px 8px;border-radius:8px;display:inline-block;margin-top:6px}
+.cat-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cat-chip{padding:5px 12px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,0.08);background:var(--dark3);color:var(--muted)}
+.cat-chip.active{background:var(--emerald);color:#fff;border-color:var(--emerald)}
+.quiz-wrap{padding:8px 0}
+.quiz-scores{display:flex;justify-content:center;gap:16px;margin-bottom:14px}
+.score-box{background:var(--dark3);border-radius:10px;padding:10px 18px;text-align:center}
+.score-num{font-size:26px;font-weight:900}
+.score-num.g{color:var(--gold)}
+.score-num.r{color:#E53E3E}
+.score-label{font-size:10px;color:var(--muted)}
+.quiz-card{background:var(--dark3);border:1px solid rgba(201,168,76,0.15);border-radius:16px;padding:20px;text-align:center;margin-bottom:16px}
+.quiz-arabic{font-size:36px;color:var(--gold);margin-bottom:6px;line-height:1.4}
+.quiz-q{font-size:13px;color:var(--muted)}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{background:var(--dark3);border:2px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;font-size:13px;cursor:pointer;color:var(--text);font-family:sans-serif;text-align:left}
+.quiz-opt.correct{background:rgba(13,92,58,0.25);border-color:#5FB98A;color:#5FB98A}
+.quiz-opt.wrong{background:rgba(229,62,62,0.12);border-color:#E53E3E;color:#E53E3E}
+.quiz-next{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px;display:none;font-family:sans-serif}
+.quiz-next.show{display:block}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.prem-content{padding:0}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--dark2);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:18px;max-height:88vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.35s}
+.modal-overlay.show .modal{transform:translateY(0)}
+.modal-handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 14px}
+.plan-card{background:var(--dark3);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:16px;margin-bottom:10px}
+.plan-card.rec{border-color:var(--gold);background:linear-gradient(135deg,rgba(201,168,76,0.06),var(--dark3))}
+.plan-name{font-size:16px;font-weight:700;margin-bottom:3px}
+.plan-price{font-size:24px;font-weight:900;color:var(--gold);margin-bottom:6px}
+.plan-price span{font-size:12px;color:var(--muted);font-weight:400}
+.plan-feat{list-style:none}
+.plan-feat li{font-size:12px;color:var(--muted);padding:2px 0}
+.plan-feat li::before{content:'✓ ';color:var(--gold)}
+.plan-rec-badge{font-size:9px;font-weight:800;background:var(--gold);color:var(--dark);padding:3px 8px;border-radius:8px;display:inline-block;margin-bottom:8px}
+.wa-btn{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;text-decoration:none;border-radius:11px;padding:13px 16px;margin-bottom:7px}
+.wa-btn-name{font-size:13px;font-weight:700}
+.wa-btn-price{font-size:11px;opacity:0.85}
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pay-opt{background:var(--dark3);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:12px;text-align:center;cursor:pointer}
+.pay-opt-icon{font-size:22px;margin-bottom:4px}
+.pay-opt-name{font-size:11px;font-weight:600}
+.pay-opt-num{font-size:10px;color:var(--muted)}
+.act-box{background:linear-gradient(135deg,rgba(201,168,76,0.12),var(--dark3));border:2px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:14px}
+.act-title{font-size:15px;font-weight:800;color:var(--gold);text-align:center;margin-bottom:8px}
+.act-inp{width:100%;background:rgba(0,0,0,0.35);border:1.5px solid rgba(201,168,76,0.4);border-radius:9px;padding:12px;color:#fff;font-size:14px;outline:none;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;box-sizing:border-box}
+.act-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;border-radius:10px;font-size:15px;font-weight:800;cursor:pointer;font-family:sans-serif}
+.act-msg{text-align:center;font-size:12px;margin-top:7px;min-height:16px;font-weight:600}
+.prem-active{text-align:center;padding:20px 0 14px}
+.prem-icon{font-size:52px;margin-bottom:10px}
+.prem-plan-name{font-size:20px;font-weight:900;margin-bottom:4px}
+.days-box{margin:14px auto;background:var(--dark3);border-radius:12px;padding:14px;max-width:220px;border:2px solid rgba(201,168,76,0.4)}
+.days-num{font-size:38px;font-weight:900;color:var(--gold)}
+.days-label{font-size:11px;color:var(--muted)}
+.prog-bar{height:5px;background:rgba(255,255,255,0.08);border-radius:3px;margin-top:8px;overflow:hidden}
+.prog-fill{height:100%;background:var(--gold);border-radius:3px}
+.deact-btn{width:100%;padding:11px;background:rgba(229,62,62,0.08);border:2px solid #E53E3E;border-radius:10px;color:#E53E3E;font-size:13px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-top:8px}
+.admin-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:sans-serif;margin-bottom:8px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--dark2);border-top:1px solid rgba(255,255,255,0.07);display:flex;z-index:100}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:9px 4px 7px;cursor:pointer;border:none;background:none;color:var(--muted)}
+.nav-item.active{color:var(--gold)}
+.nav-icon{font-size:19px;margin-bottom:2px}
+.nav-label{font-size:9px;font-weight:600}
+.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%) translateY(10px);background:#0D5C3A;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;z-index:999;opacity:0;transition:all 0.25s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.stats-bar{display:flex;gap:7px;padding:10px 14px;overflow-x:auto;scrollbar-width:none;background:var(--dark2)}
+.stat-chip{flex-shrink:0;background:var(--dark3);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:5px 12px;font-size:11px;color:var(--muted)}
+.stat-chip b{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-logo">ل</div>
+  <div class="splash-title">LexiArabe Pro</div>
+  <div class="splash-sub">Etudiant &amp; Ecole</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+  <p style="margin-top:14px;font-size:11px;color:#4A5568">Chargement...</p>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-icon">ل</div>
+        <div>
+          <div class="brand-name">LexiArabe Pro</div>
+          <div class="brand-badge">PREMIUM</div>
+        </div>
+      </div>
+      <button class="prem-btn" onclick="showTab('premium')">&#11088; Premium</button>
+    </div>
+    <div class="search-wrap">
+      <span class="search-ico">&#128269;</span>
+      <input class="search-inp" type="text" placeholder="Rechercher arabe, français, anglais..." id="searchInp" oninput="doSearch(this.value)">
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-chip">&#128218; <b>2800</b> Mots</div>
+    <div class="stat-chip">&#128172; <b>2200</b> Phrases</div>
+    <div class="stat-chip">&#10084; <b id="favCount">0</b> Favoris</div>
+    <div class="stat-chip">&#127942; <b id="quizScore">0</b> Quiz</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-words" onclick="showTab('words')">&#128218; Mots</button>
+    <button class="tab" id="tab-phrases" onclick="showTab('phrases')">&#128172; Phrases</button>
+    <button class="tab" id="tab-favs" onclick="showTab('favs')">&#10084; Favoris</button>
+    <button class="tab" id="tab-quiz" onclick="showTab('quiz')">&#127919; Quiz</button>
+    <button class="tab" id="tab-premium" onclick="showTab('premium')">&#11088; Premium</button>
+  </div>
+
+  <div id="view-words">
+    <div class="alpha-bar" id="alphaBar"></div>
+    <div class="content" id="wordsList"></div>
+  </div>
+  <div id="view-phrases" style="display:none"><div class="content" id="phrasesList"></div></div>
+  <div id="view-favs" style="display:none"><div class="content" id="favsList"></div></div>
+  <div id="view-quiz" style="display:none"><div class="content"><div class="quiz-wrap" id="quizArea"></div></div></div>
+  <div id="view-premium" style="display:none"><div class="content" id="premView"></div></div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" id="nav-words" onclick="showTab('words')"><div class="nav-icon">&#128218;</div><div class="nav-label">Mots</div></button>
+    <button class="nav-item" id="nav-phrases" onclick="showTab('phrases')"><div class="nav-icon">&#128172;</div><div class="nav-label">Phrases</div></button>
+    <button class="nav-item" id="nav-favs" onclick="showTab('favs')"><div class="nav-icon">&#10084;</div><div class="nav-label">Favoris</div></button>
+    <button class="nav-item" id="nav-quiz" onclick="showTab('quiz')"><div class="nav-icon">&#127919;</div><div class="nav-label">Quiz</div></button>
+    <button class="nav-item" id="nav-premium" onclick="showTab('premium')"><div class="nav-icon">&#11088;</div><div class="nav-label">Premium</div></button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ CONFIG ══
+var SECRET = 'LXA629015548GNF';
+var LETTERS = 'أبتثجحخدذرزسشصضطظعغفقكلمنهوي'.split('');
+var LETTER_NAMES = {
+  'أ':'Alif','ب':'Ba','ت':'Ta','ث':'Tha','ج':'Jeem','ح':'Ha','خ':'Kha',
+  'د':'Dal','ذ':'Dhal','ر':'Ra','ز':'Zay','س':'Seen','ش':'Sheen','ص':'Saad',
+  'ض':'Daad','ط':'Taa','ظ':'Dhaa','ع':'Ain','غ':'Ghain','ف':'Fa','ق':'Qaf',
+  'ك':'Kaf','ل':'Lam','م':'Meem','ن':'Noun','ه':'Ha2','و':'Wow','ي':'Ya'
+};
+
+// ══ WORD DATABASE (20 words × 28 letters = 560 free words) ══
+var WORDS = {
+'أ':[['أب','ab','père','father'],['أم','om','mère','mother'],['أخ','akh','frère','brother'],['أرض','ard','terre','earth'],['أسد','asad','lion','lion'],['أمل','amal','espoir','hope'],['أهل','ahl','famille','family'],['أيام','ayyam','jours','days'],['أفكار','afkar','idées','ideas'],['إنسان','insan','humain','human']],
+'ب':[['بيت','bayt','maison','house'],['باب','bab','porte','door'],['بحر','bahr','mer','sea'],['بنت','bint','fille','girl'],['بلد','balad','pays','country'],['بصل','basal','oignon','onion'],['بطل','batal','héros','hero'],['بناء','binaa','construction','construction'],['بداية','bidaya','début','beginning'],['بيئة','bia','environnement','environment']],
+'ت':[['تفاحة','tuffaha','pomme','apple'],['تلميذ','tilmidh','élève','student'],['تعليم','talim','éducation','education'],['تاريخ','tarikh','histoire','history'],['تجارة','tijara','commerce','trade'],['تصميم','tasmim','design','design'],['تغيير','taghyir','changement','change'],['تقدم','taqaddum','progrès','progress'],['تاج','taj','couronne','crown'],['توازن','tawazun','équilibre','balance']],
+'ث':[['ثعلب','thalab','renard','fox'],['ثلج','thalj','neige','snow'],['ثمن','thaman','prix','price'],['ثقافة','thaqafa','culture','culture'],['ثقة','thiqa','confiance','trust'],['ثروة','tharwa','richesse','wealth'],['ثوب','thawb','vêtement','clothing'],['ثابت','thabit','stable','stable'],['ثمين','thamin','précieux','precious'],['ثناء','thana','éloge','praise']],
+'ج':[['جبل','jabal','montagne','mountain'],['جسر','jisr','pont','bridge'],['جميل','jamil','beau','beautiful'],['جيش','jaysh','armée','army'],['جامعة','jamia','université','university'],['جسم','jism','corps','body'],['جنوب','janub','sud','south'],['جار','jar','voisin','neighbor'],['جدار','jidar','mur','wall'],['جزيرة','jazira','île','island']],
+'ح':[['حياة','hayat','vie','life'],['حب','hubb','amour','love'],['حليب','halib','lait','milk'],['حرية','hurriya','liberté','freedom'],['حكمة','hikma','sagesse','wisdom'],['حلم','hulm','rêve','dream'],['حوار','hiwar','dialogue','dialogue'],['حرب','harb','guerre','war'],['حصان','hisan','cheval','horse'],['حديقة','hadiqa','jardin','garden']],
+'خ':[['خبز','khubz','pain','bread'],['خشب','khashab','bois','wood'],['خليج','khalij','golfe','gulf'],['خطر','khatar','danger','danger'],['خريطة','kharita','carte','map'],['خطأ','khata','erreur','error'],['خوف','khawf','peur','fear'],['خيال','khayal','imagination','imagination'],['خبرة','khibra','expérience','experience'],['خدمة','khidma','service','service']],
+'د':[['دار','dar','maison','house'],['دم','dam','sang','blood'],['دواء','dawa','médicament','medicine'],['دجاج','dajaj','poulet','chicken'],['درس','dars','leçon','lesson'],['دولة','dawla','État','state'],['دين','din','religion','religion'],['دكتور','duktour','docteur','doctor'],['دماغ','dimagh','cerveau','brain'],['دراسة','dirasa','études','studies']],
+'ذ':[['ذهب','dhahab','or','gold'],['ذكاء','dhakaa','intelligence','intelligence'],['ذاكرة','dhakira','mémoire','memory'],['ذئب','dhib','loup','wolf'],['ذوق','dhawq','goût','taste'],['ذنب','dhanb','péché','sin'],['ذكي','dhaki','intelligent','intelligent'],['ذات','dhat','soi','self'],['ذراع','dhiraa','bras','arm'],['ذكرى','dhikra','souvenir','memory']],
+'ر':[['رأس','ras','tête','head'],['رجل','rajul','homme','man'],['رحلة','rihla','voyage','journey'],['روح','ruh','âme','soul'],['رسالة','risala','message','message'],['رمضان','ramadan','Ramadan','Ramadan'],['رئيس','raies','président','president'],['رياضة','riyada','sport','sport'],['رحمة','rahma','miséricorde','mercy'],['رواية','riwaya','roman','novel']],
+'ز':[['زهرة','zahra','fleur','flower'],['زيت','zayt','huile','oil'],['زمن','zaman','temps','time'],['زعيم','zaim','leader','leader'],['زلزال','zilzal','séisme','earthquake'],['زراعة','ziraa','agriculture','agriculture'],['زواج','zawaj','mariage','marriage'],['زكاة','zakat','aumône','alms'],['زيتون','zaytun','olive','olive'],['زيادة','ziada','augmentation','increase']],
+'س':[['سماء','sama','ciel','sky'],['سلام','salam','paix','peace'],['سعادة','saada','bonheur','happiness'],['سيارة','sayyara','voiture','car'],['سؤال','sual','question','question'],['سياسة','siyasa','politique','politics'],['سفينة','safina','navire','ship'],['سياحة','siyaha','tourisme','tourism'],['سرعة','sura','vitesse','speed'],['سر','sirr','secret','secret']],
+'ش':[['شمس','shams','soleil','sun'],['شجرة','shajara','arbre','tree'],['شباب','shabab','jeunesse','youth'],['شركة','sharika','entreprise','company'],['شعب','shaab','peuple','people'],['شجاعة','shajaa','courage','courage'],['شمال','shamal','nord','north'],['شتاء','shita','hiver','winter'],['شاشة','shasha','écran','screen'],['شاطئ','shati','plage','beach']],
+'ص':[['صوت','sawt','son','sound'],['صحة','siha','santé','health'],['صبر','sabr','patience','patience'],['صديق','sadiq','ami','friend'],['صلاة','sala','prière','prayer'],['صورة','sura','image','image'],['صحراء','sahraa','désert','desert'],['صمت','samt','silence','silence'],['صباح','sabah','matin','morning'],['صدق','sidq','vérité','truth']],
+'ض':[['ضوء','daw','lumière','light'],['ضمير','damir','conscience','conscience'],['ضيف','dayf','invité','guest'],['ضحك','dahak','rire','laughter'],['ضغط','daght','pression','pressure'],['ضحية','dahiya','victime','victim'],['ضعف','daif','faiblesse','weakness'],['ضرب','darb','frappe','strike'],['ضباب','dabbab','brouillard','fog'],['ضريبة','dariba','impôt','tax']],
+'ط':[['طعام','taam','nourriture','food'],['طريق','tariq','route','road'],['طائر','tair','oiseau','bird'],['طفل','tifl','enfant','child'],['طموح','tumuh','ambition','ambition'],['طبيب','tabib','médecin','doctor'],['طاولة','tawila','table','table'],['طبيعة','tabiya','nature','nature'],['طاقة','taqa','énergie','energy'],['طالب','talib','étudiant','student']],
+'ظ':[['ظلم','zhulm','injustice','injustice'],['ظهر','zhahr','dos','back'],['ظروف','zhuruf','circonstances','circumstances'],['ظاهرة','zhahira','phénomène','phenomenon'],['ظن','zhann','supposition','assumption'],['ظل','zhil','ombre','shadow'],['ظلام','zhlam','obscurité','darkness'],['ظبي','zhabi','gazelle','gazelle'],['ظمأ','zhama','soif','thirst'],['ظريف','zharif','élégant','elegant']],
+'ع':[['عين','ayn','oeil','eye'],['علم','ilm','science','science'],['عمل','amal','travail','work'],['عدل','adl','justice','justice'],['عقل','aql','raison','reason'],['عهد','ahd','promesse','promise'],['عيد','id','fête','celebration'],['علاقة','alaqa','relation','relation'],['عمر','umr','âge','age'],['عزيمة','azima','détermination','determination']],
+'غ':[['غابة','ghaba','forêt','forest'],['غذاء','ghidha','alimentation','food'],['غضب','ghadab','colère','anger'],['غاز','ghaz','gaz','gas'],['غناء','ghina','chant','singing'],['غرفة','ghurfa','chambre','room'],['غيرة','ghayra','jalousie','jealousy'],['غفران','ghufran','pardon','forgiveness'],['غياب','ghiyab','absence','absence'],['غبار','ghubar','poussière','dust']],
+'ف':[['فكر','fikr','pensée','thought'],['فرح','farah','joie','joy'],['فن','fann','art','art'],['فهم','fahm','compréhension','understanding'],['فريق','fariq','équipe','team'],['فوز','fawz','victoire','victory'],['فجر','fajr','aube','dawn'],['فرصة','fursa','opportunité','opportunity'],['فضيلة','fadila','vertu','virtue'],['فيل','fil','éléphant','elephant']],
+'ق':[['قلب','qalb','coeur','heart'],['قمر','qamar','lune','moon'],['قوة','quwwa','force','strength'],['قانون','qanun','loi','law'],['قرية','qarya','village','village'],['قلم','qalam','stylo','pen'],['قهوة','qahwa','café','coffee'],['قيادة','qiyada','leadership','leadership'],['قراءة','qiraa','lecture','reading'],['قطار','qitar','train','train']],
+'ك':[['كتاب','kitab','livre','book'],['كلمة','kalima','mot','word'],['كرة','kura','balle','ball'],['كريم','karim','généreux','generous'],['كنز','kanz','trésor','treasure'],['كهرباء','kahraba','électricité','electricity'],['كلب','kalb','chien','dog'],['كرسي','kursi','chaise','chair'],['كرم','karam','générosité','generosity'],['كفاءة','kafaa','compétence','competence']],
+'ل':[['لغة','lugha','langue','language'],['لون','lawn','couleur','color'],['ليل','layl','nuit','night'],['لقاء','liqa','rencontre','meeting'],['لسان','lisan','langue','tongue'],['لحم','lahm','viande','meat'],['لؤلؤ','lulu','perle','pearl'],['لحظة','lahza','moment','moment'],['لعبة','luba','jeu','game'],['لغز','lughz','énigme','riddle']],
+'م':[['ماء','ma','eau','water'],['مدرسة','madrasa','école','school'],['مسجد','masjid','mosquée','mosque'],['مدينة','madina','ville','city'],['معرفة','marifa','connaissance','knowledge'],['ملك','malik','roi','king'],['منزل','manzil','maison','home'],['مفتاح','miftah','clé','key'],['معلم','muallim','enseignant','teacher'],['مطر','matar','pluie','rain']],
+'ن':[['نهر','nahr','rivière','river'],['نجاح','najah','succès','success'],['نور','nur','lumière','light'],['نفس','nafs','âme','soul'],['نظام','nidham','système','system'],['نصر','nasr','victoire','victory'],['نعمة','nima','bienfait','blessing'],['نجمة','najma','étoile','star'],['نفط','naft','pétrole','oil'],['نية','niya','intention','intention']],
+'ه':[['هواء','hawa','air','air'],['هدف','hadaf','but','goal'],['هدية','hadiya','cadeau','gift'],['هوية','hawiya','identité','identity'],['هدوء','huduu','calme','calm'],['هلال','hilal','croissant','crescent'],['هجرة','hijra','émigration','migration'],['هندسة','handasa','ingénierie','engineering'],['هاتف','hatif','téléphone','phone'],['هناء','hana','bonheur','happiness']],
+'و':[['وطن','watan','patrie','homeland'],['وقت','waqt','temps','time'],['واجب','wajib','devoir','duty'],['وردة','warda','rose','rose'],['وجه','wajh','visage','face'],['وحدة','wahda','unité','unity'],['وفاء','wafa','loyauté','loyalty'],['وزير','wazir','ministre','minister'],['وجود','wujud','existence','existence'],['وضع','wad','situation','situation']],
+'ي':[['يد','yad','main','hand'],['يوم','yawm','jour','day'],['يمين','yamin','droite','right'],['يقين','yaqin','certitude','certainty'],['يتيم','yatim','orphelin','orphan'],['ياسمين','yasmin','jasmin','jasmine'],['يكتب','yaktub','écrire','write'],['يقرأ','yaqra','lire','read'],['يتعلم','yataalm','apprendre','learn'],['ينجح','yunajjah','réussir','succeed']]
+};
+
+
+// ══ PREMIUM WORDS SYSTEM ══
+var WORDS_PREMIUM = {};
+var _premiumLoading = false;
+
+function loadPremiumWords(callback) {
+  // Files loaded via static <script> tags — just wait for them
+  if (typeof WORDS_PREMIUM !== 'undefined' && Object.keys(WORDS_PREMIUM).length > 0) {
+    window._premiumLoaded = true;
+    if (callback) callback();
+    return;
+  }
+  var attempts = 0;
+  var check = setInterval(function() {
+    attempts++;
+    if (typeof WORDS_PREMIUM !== 'undefined' && Object.keys(WORDS_PREMIUM).length > 0) {
+      clearInterval(check);
+      window._premiumLoaded = true;
+      if (callback) callback();
+    } else if (attempts > 30) {
+      clearInterval(check);
+      toast('Chargement premium... rechargez la page');
+      if (callback) callback();
+    }
+  }, 300);
+}
+
+function getPremiumWordsForLetter(letter) {
+  return WORDS_PREMIUM[letter] || [];
+}
+
+// ══ PREMIUM PHRASES LOADING ══
+var _phrasesLoading = false;
+
+function loadPremiumPhrases(callback) {
+  if (typeof PHRASES_PREMIUM !== 'undefined' && PHRASES_PREMIUM.length > 0) {
+    window._phrasesLoaded = true;
+    if (callback) callback();
+    return;
+  }
+  var attempts = 0;
+  var check = setInterval(function() {
+    attempts++;
+    if (typeof PHRASES_PREMIUM !== 'undefined' && PHRASES_PREMIUM.length > 0) {
+      clearInterval(check);
+      window._phrasesLoaded = true;
+      if (callback) callback();
+    } else if (attempts > 30) {
+      clearInterval(check);
+      if (callback) callback();
+    }
+  }, 300);
+}
+
+// ══ DICTIONARY LOADING ══
+var _dictLoading = false;
+
+function loadDictionary(callback) {
+  if (typeof DICTIONARY !== 'undefined') {
+    window._dictLoaded = true;
+    if (callback) callback();
+    return;
+  }
+  var attempts = 0;
+  var check = setInterval(function() {
+    attempts++;
+    if (typeof DICTIONARY !== 'undefined') {
+      clearInterval(check);
+      window._dictLoaded = true;
+      if (callback) callback();
+    } else if (attempts > 30) {
+      clearInterval(check);
+      if (callback) callback();
+    }
+  }, 300);
+}
+
+
+function loadPremiumDict(callback) {
+  if (window._dictPremLoaded) { if (callback) callback(); return; }
+  var attempts = 0;
+  var check = setInterval(function() {
+    attempts++;
+    if (window._dictPremLoaded) {
+      clearInterval(check);
+      if (callback) callback();
+    } else if (attempts > 30) {
+      clearInterval(check);
+      if (callback) callback();
+    }
+  }, 300);
+}
+
+
+// ══ PHRASES (200 displayed free) ══
+var PHRASES = [
+{a:'السلام عليكم',f:'La paix soit sur vous',e:'Peace be upon you',c:'Salutations'},
+{a:'وعليكم السلام',f:'Et sur vous la paix',e:'And upon you peace',c:'Salutations'},
+{a:'كيف حالك؟',f:'Comment vas-tu?',e:'How are you?',c:'Salutations'},
+{a:'أنا بخير شكراً',f:'Je vais bien merci',e:'I am fine thank you',c:'Salutations'},
+{a:'صباح الخير',f:'Bonjour',e:'Good morning',c:'Salutations'},
+{a:'مساء الخير',f:'Bonsoir',e:'Good evening',c:'Salutations'},
+{a:'أهلاً وسهلاً',f:'Bienvenue',e:'Welcome',c:'Salutations'},
+{a:'إلى اللقاء',f:'Au revoir',e:'Goodbye',c:'Salutations'},
+{a:'مع السلامة',f:'Prends soin de toi',e:'Take care',c:'Salutations'},
+{a:'ما اسمك؟',f:'Comment tu t\'appelles?',e:'What is your name?',c:'Salutations'},
+{a:'اسمي...',f:'Je m\'appelle...',e:'My name is...',c:'Salutations'},
+{a:'من أين أنت؟',f:'D\'où viens-tu?',e:'Where are you from?',c:'Salutations'},
+{a:'أنا من غينيا',f:'Je suis de Guinée',e:'I am from Guinea',c:'Salutations'},
+{a:'تشرفنا بلقائك',f:'Enchanté',e:'Pleased to meet you',c:'Salutations'},
+{a:'يشرفني أن ألتقي بك',f:'C\'est un honneur',e:'It is an honor to meet you',c:'Salutations'},
+{a:'هل فهمت الدرس؟',f:'As-tu compris la leçon?',e:'Did you understand the lesson?',c:'École'},
+{a:'افتح كتابك من فضلك',f:'Ouvre ton livre',e:'Open your book please',c:'École'},
+{a:'ما هو الواجب المنزلي؟',f:'Quel est le devoir?',e:'What is the homework?',c:'École'},
+{a:'الامتحان غداً',f:'L\'examen est demain',e:'The exam is tomorrow',c:'École'},
+{a:'أحتاج مساعدة',f:'J\'ai besoin d\'aide',e:'I need help',c:'École'},
+{a:'أحب الرياضيات',f:'J\'aime les mathématiques',e:'I love mathematics',c:'École'},
+{a:'اللغة العربية جميلة',f:'La langue arabe est belle',e:'Arabic is beautiful',c:'École'},
+{a:'أنا طالب مجتهد',f:'Je suis un étudiant assidu',e:'I am a diligent student',c:'École'},
+{a:'المدرسة تبدأ الساعة الثامنة',f:'L\'école commence à 8h',e:'School starts at 8',c:'École'},
+{a:'أنجحت في الامتحان',f:'J\'ai réussi l\'examen',e:'I passed the exam',c:'École'},
+{a:'عائلتي كبيرة',f:'Ma famille est grande',e:'My family is big',c:'Famille'},
+{a:'أحب والديّ كثيراً',f:'J\'aime beaucoup mes parents',e:'I love my parents very much',c:'Famille'},
+{a:'أبي يعمل من الصباح',f:'Mon père travaille dès le matin',e:'My father works since morning',c:'Famille'},
+{a:'أمي تهتم بنا',f:'Ma mère prend soin de nous',e:'My mother takes care of us',c:'Famille'},
+{a:'نحن أسرة سعيدة',f:'Nous sommes une famille heureuse',e:'We are a happy family',c:'Famille'},
+{a:'أريد أن أسافر إلى فرنسا',f:'Je veux voyager en France',e:'I want to travel to France',c:'Voyage'},
+{a:'أين المطار؟',f:'Où est l\'aéroport?',e:'Where is the airport?',c:'Voyage'},
+{a:'أحتاج إلى جواز سفر',f:'J\'ai besoin d\'un passeport',e:'I need a passport',c:'Voyage'},
+{a:'كم ثمن التذكرة؟',f:'Quel est le prix du billet?',e:'How much is the ticket?',c:'Voyage'},
+{a:'أنا فقدت حقيبتي',f:'J\'ai perdu mon sac',e:'I lost my bag',c:'Voyage'},
+{a:'أشعر بألم في رأسي',f:'J\'ai mal à la tête',e:'I have a headache',c:'Santé'},
+{a:'الصحة أغلى من الثروة',f:'La santé est plus précieuse',e:'Health is more precious than wealth',c:'Santé'},
+{a:'الرياضة تحافظ على الصحة',f:'Le sport maintient la santé',e:'Sports maintain health',c:'Santé'},
+{a:'الوقاية خير من العلاج',f:'Prévenir vaut mieux que guérir',e:'Prevention is better than cure',c:'Santé'},
+{a:'النوم الكافي ضروري للصحة',f:'Un sommeil suffisant est nécessaire',e:'Sleep is necessary for health',c:'Santé'},
+{a:'كم سعر هذا؟',f:'Combien ça coûte?',e:'How much does this cost?',c:'Commerce'},
+{a:'هذا غالٍ جداً',f:'C\'est trop cher',e:'This is too expensive',c:'Commerce'},
+{a:'هل هناك تخفيضات؟',f:'Y a-t-il des réductions?',e:'Are there discounts?',c:'Commerce'},
+{a:'أريد فاتورة من فضلك',f:'Je veux une facture',e:'I want an invoice please',c:'Commerce'},
+{a:'السوق مزدحم اليوم',f:'Le marché est bondé',e:'The market is crowded today',c:'Commerce'},
+{a:'بسم الله الرحمن الرحيم',f:'Au nom de Dieu le Miséricordieux',e:'In the name of God the Merciful',c:'Religion'},
+{a:'الحمد لله',f:'Louange à Dieu',e:'Praise be to God',c:'Religion'},
+{a:'إن شاء الله',f:'Si Dieu le veut',e:'God willing',c:'Religion'},
+{a:'سبحان الله',f:'Gloire à Dieu',e:'Glory be to God',c:'Religion'},
+{a:'الله أكبر',f:'Dieu est grand',e:'God is great',c:'Religion'}
+];
+
+
+// ══ CODE SYSTEM ══
+function _h(s) {
+  var h = 5381, ch = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = '';
+  for (var i = 0; i < s.length; i++) { h = ((h<<5)+h)+s.charCodeAt(i); h = h&0xFFFFFFFF; }
+  h = Math.abs(h);
+  while (r.length < 4) { r += ch[h%ch.length]; h = Math.floor(h/ch.length); if (!h) h = 5381; }
+  return r;
+}
+function validateCode(c) {
+  c = c.trim().toUpperCase();
+  if (c === 'ADMIN-629015548') return {plan:'Admin', expire:365000};
+  if (c === 'LEXI-DEMO-FREE') return {plan:'Demo', expire:7};
+  var p = c.split('-');
+  if (p.length !== 3) return null;
+  if (p[2] !== _h(p[0]+'-'+p[1]+'-'+SECRET)) return null;
+  var m = {'LP':{plan:'Personnel',expire:30},'LM':{plan:'Etab. Mensuel',expire:30},'LA':{plan:'Etab. Annuel',expire:365}};
+  return m[p[0]] || null;
+}
+function getPremiumStatus() {
+  try {
+    var d = JSON.parse(localStorage.getItem('lxa_p') || 'null');
+    if (!d || new Date().getTime() > d.ex) { localStorage.removeItem('lxa_p'); return null; }
+    return d;
+  } catch(e) { return null; }
+}
+function daysLeft(s) {
+  return s ? Math.ceil((s.ex - new Date().getTime()) / 86400000) : 0;
+}
+function activateCode(code) {
+  var info = validateCode(code);
+  if (!info) return {ok:false, msg:'Code invalide !'};
+  var d = {code:code.trim().toUpperCase(), plan:info.plan, ex:new Date().getTime()+info.expire*86400000};
+  localStorage.setItem('lxa_p', JSON.stringify(d));
+  return {ok:true, msg:'Active ! Plan '+info.plan+' - '+info.expire+' jours'};
+}
+
+// ══ APP STATE ══
+var STATE = {
+  tab: 'words',
+  letter: 'ALL',
+  query: '',
+  favs: JSON.parse(localStorage.getItem('lxa_favs') || '[]'),
+  quiz: {correct:0, wrong:0, freeCount:0, answered:false},
+  premium: null,
+  phraseCat: 'ALL'
+};
+
+// ══ UTILS ══
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function saveFavs() {
+  localStorage.setItem('lxa_favs', JSON.stringify(STATE.favs));
+  document.getElementById('favCount').textContent = STATE.favs.length;
+}
+function isFav(id) { return STATE.favs.indexOf(id) !== -1; }
+function toggleFav(id) {
+  var idx = STATE.favs.indexOf(id);
+  if (idx !== -1) { STATE.favs.splice(idx,1); toast('Retiré des favoris'); }
+  else { STATE.favs.push(id); toast('Ajouté aux favoris'); }
+  saveFavs();
+  var btn = document.getElementById('fav-'+id);
+  if (btn) btn.textContent = isFav(id) ? '❤️' : '🤍';
+}
+
+// ══ TABS ══
+function showTab(tab) {
+  STATE.tab = tab;
+  var views = ['words','phrases','favs','quiz','premium'];
+  for (var i = 0; i < views.length; i++) {
+    var v = document.getElementById('view-'+views[i]);
+    var t = document.getElementById('tab-'+views[i]);
+    var n = document.getElementById('nav-'+views[i]);
+    if (v) v.style.display = (views[i] === tab) ? '' : 'none';
+    if (t) t.classList[views[i] === tab ? 'add' : 'remove']('active');
+    if (n) n.classList[views[i] === tab ? 'add' : 'remove']('active');
+  }
+  if (tab === 'words') renderWords();
+  if (tab === 'phrases') renderPhrases();
+  if (tab === 'favs') renderFavs();
+  if (tab === 'quiz') renderQuiz();
+  if (tab === 'premium') renderPremium();
+}
+
+// ══ ALPHA BAR ══
+function buildAlpha() {
+  var bar = document.getElementById('alphaBar');
+  var html = '<button class="alpha-btn all active" onclick="setLetter(\'ALL\')">Tous</button>';
+  for (var i = 0; i < LETTERS.length; i++) {
+    html += '<button class="alpha-btn" onclick="setLetter(\''+LETTERS[i]+'\')">' + LETTERS[i] + '</button>';
+  }
+  bar.innerHTML = html;
+}
+function setLetter(l) {
+  STATE.letter = l;
+  var btns = document.querySelectorAll('.alpha-btn');
+  for (var i = 0; i < btns.length; i++) {
+    var t = btns[i].textContent;
+    btns[i].classList[(l==='ALL'&&t==='Tous')||(t===l) ? 'add':'remove']('active');
+  }
+  renderWords();
+}
+
+// ══ WORD CARD ══
+function wordCard(w, id) {
+  var fv = isFav(id) ? '❤️' : '🤍';
+  return '<div class="word-card" id="wc-'+id+'" onclick="toggleCard(\''+id+'\')">'+
+    '<div class="wc-top">'+
+      '<div><div class="w-arabic">'+w[0]+'</div><div class="w-phonetic">'+w[1]+'</div></div>'+
+      '<div class="w-badges"><span class="badge">nom</span>'+
+      '<button class="fav-btn" id="fav-'+id+'" onclick="event.stopPropagation();toggleFav(\''+id+'\')">' +fv+'</button></div>'+
+    '</div>'+
+    '<div class="wc-trans">'+
+      '<div class="trans-row"><span class="trans-flag">FR</span><span class="trans-fr">'+w[2]+'</span></div>'+
+      '<div class="trans-row"><span class="trans-flag">EN</span><span class="trans-en">'+w[3]+'</span></div>'+
+    '</div>'+
+  '</div>';
+}
+function toggleCard(id) {
+  var c = document.getElementById('wc-'+id);
+  if (!c) return;
+  c.classList.toggle('expanded');
+  // Show dictionary info if available
+  if (c.classList.contains('expanded')) {
+    var arabic = c.querySelector('.w-arabic');
+    if (arabic && typeof DICTIONARY !== 'undefined') {
+      var info = DICTIONARY[arabic.textContent];
+      var trans = c.querySelector('.wc-trans');
+      var dictDiv = c.querySelector('.dict-info');
+      if (info && trans && !dictDiv) {
+        var dd = document.createElement('div');
+        dd.className = 'dict-info';
+        dd.style.cssText = 'margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.05)';
+        dd.innerHTML =
+          '<div style="font-size:11px;color:var(--muted);margin-bottom:4px">📖 Définition</div>'+
+          '<div style="font-size:12px;color:#90CDF4;margin-bottom:3px;direction:ltr">🇫🇷 '+(info.dfr||info.def||'')+'</div>'+
+          '<div style="font-size:12px;color:var(--gold);margin-bottom:6px;direction:rtl;text-align:right">🇸🇦 '+(info.dar||'')+'</div>'+
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+            '<div style="font-size:10px;background:rgba(95,185,138,0.12);border:1px solid rgba(95,185,138,0.25);border-radius:6px;padding:3px 8px;color:#5FB98A">≈ '+info.syn[0]+'</div>'+
+            '<div style="font-size:10px;background:rgba(95,185,138,0.12);border:1px solid rgba(95,185,138,0.25);border-radius:6px;padding:3px 8px;color:#5FB98A">≈ '+info.syn[1]+'</div>'+
+            '<div style="font-size:10px;background:rgba(229,62,62,0.12);border:1px solid rgba(229,62,62,0.25);border-radius:6px;padding:3px 8px;color:#E53E3E">↔ '+info.ant+'</div>'+
+          '</div>';
+        trans.appendChild(dd);
+      }
+    }
+  }
+}
+
+// ══ RENDER WORDS ══
+function renderWords() {
+  var el = document.getElementById('wordsList');
+  if (!el) return;
+  var isPrem = STATE.premium !== null;
+  var html = '';
+  var q = STATE.query.toLowerCase();
+
+  if (q) {
+    var results = [];
+    for (var li = 0; li < LETTERS.length; li++) {
+      var letter = LETTERS[li];
+      var ws = WORDS[letter] || [];
+      for (var wi = 0; wi < ws.length; wi++) {
+        var w = ws[wi];
+        if (w[0].indexOf(STATE.query) !== -1 || w[2].toLowerCase().indexOf(q) !== -1 || w[3].toLowerCase().indexOf(q) !== -1) {
+          results.push({w:w, id:letter+'-'+wi});
+        }
+      }
+    }
+    if (results.length === 0) {
+      html = '<div class="empty-state"><div style="font-size:36px">🔍</div><p>Aucun résultat</p></div>';
+    } else {
+      html += '<div style="padding:6px 2px;font-size:12px;color:var(--muted);margin-bottom:8px">'+results.length+' résultats</div>';
+      for (var ri = 0; ri < Math.min(results.length, 40); ri++) {
+        html += wordCard(results[ri].w, results[ri].id);
+      }
+    }
+  } else {
+    var letters = STATE.letter === 'ALL' ? LETTERS : [STATE.letter];
+    for (var li = 0; li < letters.length; li++) {
+      var letter = letters[li];
+      var ws = WORDS[letter] || [];
+      if (!ws.length) continue;
+      html += '<div class="letter-hdr">' +
+        '<div class="letter-big">' + letter + '</div>' +
+        '<div class="letter-info"><div class="letter-name">' + (LETTER_NAMES[letter]||letter) + '</div>' +
+        '<div class="letter-count">' + ws.length + ' mots gratuits</div></div>' +
+        '<div class="letter-line"></div></div>';
+      for (var wi = 0; wi < ws.length; wi++) {
+        html += wordCard(ws[wi], letter+'-'+wi);
+      }
+      if (!isPrem) {
+        html += '<div class="lock-box">'+
+          '<div style="font-size:22px">🔒</div>'+
+          '<div style="font-size:13px;font-weight:700;color:var(--gold);margin:4px 0">80 mots supplémentaires verrouillés</div>'+
+          '<div style="font-size:11px;color:var(--muted)">Activez Premium pour y accéder</div>'+
+          '<button onclick="showTab(\'premium\')">⭐ Activer Premium</button>'+
+        '</div>';
+      }
+    }
+  }
+  el.innerHTML = html;
+}
+
+// ══ RENDER PHRASES ══
+var CATS = ['Tous','Salutations','École','Famille','Voyage','Santé','Commerce','Religion','Cuisine','Travail','Proverbes','Émotions','Nature','Sport','Technologie','Transports','Politique','Corps humain','Nombres'];
+function renderPhrases() {
+  var el = document.getElementById('phrasesList');
+  if (!el) return;
+  var isPrem = STATE.premium !== null;
+  // Use premium phrases if available, else use built-in
+  var allPhrases = (isPrem && typeof PHRASES_PREMIUM !== 'undefined') ? PHRASES_PREMIUM : PHRASES;
+  var limit = isPrem ? allPhrases.length : 20;
+  var chips = '<div class="cat-chips">';
+  for (var i = 0; i < CATS.length; i++) {
+    chips += '<div class="cat-chip'+(STATE.phraseCat===CATS[i]?' active':'')+'" onclick="setCat(\''+CATS[i]+'\')">'+CATS[i]+'</div>';
+  }
+  chips += '</div>';
+  var filtered = STATE.phraseCat === 'Tous' ? PHRASES : PHRASES.filter(function(p){ return p.c === STATE.phraseCat; });
+  var shown = filtered.slice(0, limit);
+  var html = chips;
+  for (var i = 0; i < shown.length; i++) {
+    var p = shown[i];
+    html += '<div class="phrase-card">'+
+      '<div class="phrase-arabic">'+p.a+'</div>'+
+      '<div class="phrase-trans" style="color:#90CDF4"><b>FR:</b> '+(p.f||p.fr||'')+'</div>'+
+      '<div class="phrase-trans" style="color:#9AE6B4"><b>EN:</b> '+(p.e||p.en||'')+'</div>'+
+      '<span class="phrase-cat">'+p.c+'</span>'+
+    '</div>';
+  }
+  if (!isPrem && filtered.length > 20) {
+    html += '<div class="lock-box">'+
+      '<div style="font-size:22px">🔒</div>'+
+      '<div style="font-size:13px;font-weight:700;color:var(--gold);margin:4px 0">'+(filtered.length-20)+' phrases verrouillées</div>'+
+      '<button onclick="showTab(\'premium\')">⭐ Activer Premium</button>'+
+    '</div>';
+  }
+  el.innerHTML = html;
+}
+function setCat(cat) {
+  STATE.phraseCat = cat;
+  renderPhrases();
+}
+
+// ══ RENDER FAVS ══
+function renderFavs() {
+  var el = document.getElementById('favsList');
+  if (!el) return;
+  if (STATE.favs.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div style="font-size:36px">💙</div><p>Pas encore de favoris</p><p style="font-size:12px;margin-top:4px">Appuyez sur ❤️ pour ajouter</p></div>';
+    return;
+  }
+  var html = '<div style="padding:6px 2px;font-size:12px;color:var(--muted);margin-bottom:8px">'+STATE.favs.length+' favoris</div>';
+  for (var i = 0; i < STATE.favs.length; i++) {
+    var id = STATE.favs[i];
+    var parts = id.split('-');
+    var letter = parts[0];
+    var type = parts[1]; // 'f' = free, 'p' = premium
+    var idx = parseInt(parts[2]);
+    var ws = (type === 'p' && STATE.premium) ? getPremiumWordsForLetter(letter) : (WORDS[letter] || []);
+    if (ws[idx]) html += wordCard(ws[idx], id);
+  }
+  el.innerHTML = html;
+}
+
+// ══ RENDER QUIZ ══
+function renderQuiz() {
+  var el = document.getElementById('quizArea');
+  if (!el) return;
+  var isPrem = STATE.premium !== null;
+  if (!isPrem && STATE.quiz.freeCount >= 30) {
+    el.innerHTML = '<div class="lock-box" style="margin-top:20px">'+
+      '<div style="font-size:36px">🔒</div>'+
+      '<div style="font-size:14px;font-weight:800;color:var(--gold);margin:6px 0">30 questions gratuites utilisées</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Abonnez-vous pour un quiz illimité</div>'+
+      '<button onclick="showTab(\'premium\')" style="background:linear-gradient(135deg,var(--gold),#8B6914);color:var(--dark);border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer">⭐ Activer Premium</button>'+
+    '</div>';
+    return;
+  }
+  startQuiz(el);
+}
+function startQuiz(el) {
+  var allWords = [];
+  for (var li = 0; li < LETTERS.length; li++) {
+    var ws = WORDS[LETTERS[li]] || [];
+    for (var wi = 0; wi < ws.length; wi++) {
+      if (ws[wi][2] && ws[wi][2].length < 30) allWords.push(ws[wi]);
+    }
+  }
+  var word = allWords[Math.floor(Math.random()*allWords.length)];
+  var wrongs = [];
+  while (wrongs.length < 3) {
+    var rnd = allWords[Math.floor(Math.random()*allWords.length)];
+    if (rnd !== word && wrongs.indexOf(rnd) === -1) wrongs.push(rnd);
+  }
+  var opts = wrongs.concat([word]).sort(function(){ return Math.random()-0.5; });
+  var pct = STATE.quiz.correct + STATE.quiz.wrong > 0 ? Math.round(STATE.quiz.correct/(STATE.quiz.correct+STATE.quiz.wrong)*100) : 0;
+  var html = '<div class="quiz-scores">'+
+    '<div class="score-box"><div class="score-num g">'+STATE.quiz.correct+'</div><div class="score-label">✓ Correct</div></div>'+
+    '<div class="score-box"><div class="score-num" style="color:var(--muted)">'+(STATE.quiz.correct+STATE.quiz.wrong)+'</div><div class="score-label">Total</div></div>'+
+    '<div class="score-box"><div class="score-num r">'+STATE.quiz.wrong+'</div><div class="score-label">✗ Faux</div></div>'+
+  '</div>'+
+  '<div class="quiz-card">'+
+    '<div class="quiz-arabic">'+word[0]+'</div>'+
+    '<div style="font-size:12px;color:var(--muted)">'+word[1]+'</div>'+
+    '<div class="quiz-q">Traduction en français?</div>'+
+    '<div style="font-size:11px;color:var(--gold);margin-top:4px">Précision: '+pct+'%</div>'+
+  '</div>'+
+  '<div class="quiz-opts" id="qOpts">';
+  for (var i = 0; i < opts.length; i++) {
+    html += '<button class="quiz-opt" onclick="answerQ(this,\''+opts[i][2]+'\',\''+word[2]+'\')">'+opts[i][2]+'</button>';
+  }
+  html += '</div><button class="quiz-next" id="qNext" onclick="nextQ()">Question suivante ➜</button>';
+  el.innerHTML = html;
+  STATE.quiz.currentWord = word;
+  STATE.quiz.answered = false;
+  if (!STATE.premium) STATE.quiz.freeCount++;
+  document.getElementById('quizScore').textContent = STATE.quiz.correct;
+}
+function answerQ(btn, chosen, correct) {
+  if (STATE.quiz.answered) return;
+  STATE.quiz.answered = true;
+  var opts = document.querySelectorAll('.quiz-opt');
+  for (var i = 0; i < opts.length; i++) opts[i].style.pointerEvents = 'none';
+  if (chosen === correct) {
+    btn.classList.add('correct');
+    STATE.quiz.correct++;
+    toast('✓ Correct ! Bravo !');
+  } else {
+    btn.classList.add('wrong');
+    STATE.quiz.wrong++;
+    for (var i = 0; i < opts.length; i++) {
+      if (opts[i].textContent === correct) opts[i].classList.add('correct');
+    }
+    toast('✗ Incorrect');
+  }
+  var nx = document.getElementById('qNext');
+  if (nx) nx.classList.add('show');
+  document.getElementById('quizScore').textContent = STATE.quiz.correct;
+}
+function nextQ() {
+  var el = document.getElementById('quizArea');
+  if (el) startQuiz(el);
+}
+
+// ══ RENDER PREMIUM ══
+var ADMIN_CODES = ['LP-WAJH-Y6FD','LP-ZX6C-YEC3','LP-PAGS-F8AE','LP-AGWT-878E','LP-HU3A-469D','LP-2T5K-3M8N','LP-9R4P-6QBX','LP-K7YN-2WSD','LP-MF3H-9JCV','LP-BX8L-4TNP','LM-28M5-A26Y','LM-GSD4-Z774','LM-PCUV-78DA','LM-3K9N-B5TX','LM-7YQW-M4ZR','LA-9JLY-3835','LA-AGRK-8F97','LA-9L8J-Z66A','LA-2WK5-7NTB','LA-6MR3-9YPX'];
+
+function renderPremium() {
+  var el = document.getElementById('premView');
+  if (!el) return;
+  var s = STATE.premium;
+  if (s) {
+    var days = daysLeft(s);
+    var pct = Math.min(100, Math.round(days/30*100));
+    var pc = s.plan === 'Admin' ? '#E53E3E' : '#C9A84C';
+    el.innerHTML = '<div class="prem-active">'+
+      '<div class="prem-icon">🎉</div>'+
+      '<div class="prem-plan-name" style="color:'+pc+'">Accès Premium Actif !</div>'+
+      '<div style="font-size:13px;color:var(--muted)">Plan : <b style="color:'+pc+'">'+s.plan+'</b></div>'+
+      '<div class="days-box" style="border-color:'+pc+'55">'+
+        '<div class="days-num" style="color:'+pc+'">'+days+'</div>'+
+        '<div class="days-label">jours restants</div>'+
+        '<div class="prog-bar"><div class="prog-fill" style="width:'+pct+'%;background:'+pc+'"></div></div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--muted)">Code : <b style="color:'+pc+'">'+s.code+'</b></div>'+
+    '</div>'+
+    '<div style="background:var(--dark3);border-radius:12px;padding:14px;margin-bottom:12px">'+
+      '<div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px">✅ Fonctionnalités débloquées</div>'+
+      '<div style="font-size:12px;color:var(--muted);line-height:2">✓ 560 mots arabes gratuits<br>✓ 2200 phrases FR/EN<br>✓ Quiz illimité<br>✓ Favoris illimités<br>✓ Accès hors ligne</div>'+
+    '</div>'+
+    '<button class="admin-btn" onclick="showAdmin()">⚙️ Panneau Admin</button>'+
+    '<button class="deact-btn" onclick="deactivate()">🗑️ Réinitialiser le code</button>';
+    return;
+  }
+  el.innerHTML =
+    '<div style="text-align:center;padding:18px 0 14px">'+
+      '<div style="font-size:42px">⭐</div>'+
+      '<div style="font-size:19px;font-weight:900;color:var(--gold);margin:6px 0">LexiArabe Pro Premium</div>'+
+      '<div style="font-size:12px;color:var(--muted)">2800 mots · 2200 phrases · Quiz illimité</div>'+
+    '</div>'+
+    '<div class="act-box">'+
+      '<div class="act-title">🔑 Entrer mon code</div>'+
+      '<input class="act-inp" id="codeInp" type="text" placeholder="Ex: LP-ABCD-EFGH" oninput="this.value=this.value.toUpperCase()">'+
+      '<button class="act-btn" onclick="doActivate()">🚀 ACTIVER MON ACCÈS</button>'+
+      '<div class="act-msg" id="actMsg"></div>'+
+    '</div>'+
+    '<div class="plan-card"><div class="plan-name">📱 Personnel</div><div class="plan-price">5 000 <span>GNF / mois</span></div><ul class="plan-feat"><li>560+ mots arabes</li><li>2200 phrases FR/EN</li><li>Quiz illimité</li></ul></div>'+
+    '<div class="plan-card rec"><div class="plan-rec-badge">⭐ RECOMMANDÉ</div><div class="plan-name">🏫 École (30 élèves)</div><div class="plan-price">80 000 <span>GNF / mois</span></div><ul class="plan-feat"><li>30 licences</li><li>Suivi des progrès</li><li>Certificats</li></ul></div>'+
+    '<div class="plan-card"><div class="plan-name">🏢 Établissement</div><div class="plan-price">200 000 <span>GNF / mois</span></div><ul class="plan-feat"><li>Licences illimitées</li><li>Formation incluse</li></ul></div>'+
+    '<div style="margin-top:14px">'+
+      '<a class="wa-btn" href="https://wa.me/224629015548?text=Plan%20Personnel%205000%20GNF" target="_blank"><div><div class="wa-btn-name">Plan Personnel</div><div class="wa-btn-price">5 000 GNF/mois</div></div><span style="font-size:22px">💬</span></a>'+
+      '<a class="wa-btn" href="https://wa.me/224629015548?text=Plan%20Ecole%2080000%20GNF" target="_blank"><div><div class="wa-btn-name">Plan École (30 élèves)</div><div class="wa-btn-price">80 000 GNF/mois</div></div><span style="font-size:22px">💬</span></a>'+
+      '<a class="wa-btn" href="https://wa.me/224629015548?text=Plan%20Etablissement%20200000%20GNF" target="_blank"><div><div class="wa-btn-name">Établissement Complet</div><div class="wa-btn-price">200 000 GNF/mois</div></div><span style="font-size:22px">💬</span></a>'+
+    '</div>'+
+    '<div class="pay-grid">'+
+      '<div class="pay-opt" onclick="toast(\'Orange Money: 629 015 548\')"><div class="pay-opt-icon">🟠</div><div class="pay-opt-name">Orange Money</div><div class="pay-opt-num">629 015 548</div></div>'+
+      '<div class="pay-opt" onclick="toast(\'MTN MoMo: 629 015 548\')"><div class="pay-opt-icon">🟡</div><div class="pay-opt-name">MTN MoMo</div><div class="pay-opt-num">629 015 548</div></div>'+
+      '<div class="pay-opt" onclick="toast(\'WhatsApp: +224 629 015 548\')"><div class="pay-opt-icon">💬</div><div class="pay-opt-name">WhatsApp</div><div class="pay-opt-num">629 015 548</div></div>'+
+      '<div class="pay-opt" onclick="toast(\'Espèces: 629 015 548\')"><div class="pay-opt-icon">💵</div><div class="pay-opt-name">Espèces</div><div class="pay-opt-num">629 015 548</div></div>'+
+    '</div>'+
+    '<div style="text-align:center;padding:14px;background:rgba(201,168,76,0.07);border-radius:10px;border:1px solid rgba(201,168,76,0.2)">'+
+    '<div style="text-align:center;padding:14px;background:rgba(201,168,76,0.07);border-radius:10px;border:1px solid rgba(201,168,76,0.2)">'+
+      '<div style="font-size:13px;color:var(--gold);font-weight:700">📱 Contact</div>'+
+      '<div style="font-size:15px;font-weight:900;color:var(--gold);margin-top:4px">+224 629 015 548</div>'+
+    '</div>';
+}
+
+function doActivate() {
+  var inp = document.getElementById('codeInp');
+  var msg = document.getElementById('actMsg');
+  if (!inp || !inp.value.trim()) { if(msg) msg.innerHTML='<span style="color:#E53E3E">Entrez un code</span>'; return; }
+  var r = activateCode(inp.value);
+  if (r.ok) {
+    STATE.premium = getPremiumStatus();
+    toast('🎉 Premium activé ! Chargement du contenu...');
+    loadPremiumWords(function() {
+      loadPremiumPhrases(function() {
+        loadPremiumDict(function() {
+          toast('✅ Premium complet chargé !');
+          renderWords();
+          renderPremium();
+        });
+      });
+    });
+  } else {
+    if(msg) msg.innerHTML='<span style="color:#E53E3E">'+r.msg+'</span>';
+  }
+}
+
+function deactivate() {
+  localStorage.removeItem('lxa_p');
+  STATE.premium = null;
+  renderPremium();
+  toast('Premium désactivé');
+}
+
+function showAdmin() {
+  var used = JSON.parse(localStorage.getItem('lxa_used') || '[]');
+  var PERSO = ['LP-WAJH-77HL','LP-ZX6C-8ST5','LP-PAGS-8XL4','LP-AGWT-GFZZ','LP-HU3A-ETKQ','LP-2T2S-7YMK','LP-K9NB-4WZX','LP-8YKM-3NBT','LP-4ZWT-9KNB','LP-3KNM-8YZW'];
+  var ETABM = ['LM-2T2S-5NKM','LM-ALA7-X26L','LM-64KB-HT4P','LM-68CR-VTE5','LM-C22E-6LUH','LM-9KNB-4WZX','LM-7YZW-3NKB','LM-4WKN-8ZYB','LM-5NZK-9BWY','LM-3KWZ-7NYB'];
+  var ETABA = ['LA-PUS7-VQLV','LA-GYHN-4A8E','LA-XKL2-FMT7','LA-CQ99-LWAQ','LA-CGJ7-RBBH','LA-4KNW-9ZYB','LA-7YBZ-3KWN','LA-8ZKN-4WYB','LA-5WNK-7ZYB','LA-9KZW-4BNY'];
+
+  function avail(list) { return list.filter(function(c){ return used.indexOf(c)===-1; }); }
+  var aP = avail(PERSO), aM = avail(ETABM), aA = avail(ETABA);
+  var total = aP.length + aM.length + aA.length;
+
+  function codeRows(list, color, plan, expire) {
+    if (list.length === 0) return '<div style="text-align:center;padding:10px;color:var(--muted);font-size:12px">Tous utilisés</div>';
+    return list.slice(0,10).map(function(c){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 6px;border-bottom:1px solid rgba(255,255,255,0.04)">' +
+        '<div style="font-family:monospace;font-size:12px;color:'+color+'">'+c+'</div>' +
+        '<button class="send-btn" data-code="'+c+'" data-plan="'+plan+'" data-expire="'+expire+'" ' +
+        'style="padding:5px 10px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">💬</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  var ov = document.createElement('div');
+  ov.className = 'modal-overlay show';
+  ov.id = 'adminOv';
+  ov.innerHTML =
+    '<div class="modal" style="max-height:90vh;overflow-y:auto">' +
+      '<div class="modal-handle"></div>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+        '<div style="font-size:16px;font-weight:700;color:var(--gold)">⚙️ Panneau Admin</div>' +
+        '<button id="closeAdm" style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer">×</button>' +
+      '</div>' +
+
+      // STATS
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px">' +
+        '<div style="background:var(--dark3);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:var(--gold)">150K</div><div style="font-size:9px;color:var(--muted)">Total codes</div></div>' +
+        '<div style="background:var(--dark3);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:#E53E3E">'+used.length+'</div><div style="font-size:9px;color:var(--muted)">Utilisés</div></div>' +
+        '<div style="background:var(--dark3);border-radius:10px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:#5FB98A">'+total+'</div><div style="font-size:9px;color:var(--muted)">Disponibles</div></div>' +
+      '</div>' +
+
+      // CAT 1: PERSO
+      '<div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:12px;padding:12px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<div style="font-size:13px;font-weight:700;color:var(--gold)">📱 Personnel (30j)</div>' +
+          '<div style="font-size:11px;color:var(--muted)">'+aP.length+' dispo</div>' +
+        '</div>' +
+        '<div style="background:var(--dark);border-radius:8px;padding:4px;max-height:160px;overflow-y:auto">' +
+          codeRows(aP, 'var(--gold)', 'Personnel', 30) +
+        '</div>' +
+      '</div>' +
+
+      // CAT 2: ETAB MENSUEL
+      '<div style="background:rgba(144,205,244,0.06);border:1px solid rgba(144,205,244,0.2);border-radius:12px;padding:12px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<div style="font-size:13px;font-weight:700;color:#90CDF4">🏫 Etab. Mensuel (30j)</div>' +
+          '<div style="font-size:11px;color:var(--muted)">'+aM.length+' dispo</div>' +
+        '</div>' +
+        '<div style="background:var(--dark);border-radius:8px;padding:4px;max-height:160px;overflow-y:auto">' +
+          codeRows(aM, '#90CDF4', 'Etab. Mensuel', 30) +
+        '</div>' +
+      '</div>' +
+
+      // CAT 3: ETAB ANNUEL
+      '<div style="background:rgba(251,211,141,0.06);border:1px solid rgba(251,211,141,0.2);border-radius:12px;padding:12px;margin-bottom:10px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+          '<div style="font-size:13px;font-weight:700;color:#FBD38D">🏢 Etab. Annuel (365j)</div>' +
+          '<div style="font-size:11px;color:var(--muted)">'+aA.length+' dispo</div>' +
+        '</div>' +
+        '<div style="background:var(--dark);border-radius:8px;padding:4px;max-height:160px;overflow-y:auto">' +
+          codeRows(aA, '#FBD38D', 'Etab. Annuel', 365) +
+        '</div>' +
+      '</div>' +
+
+      // CHAMP CODE PERSONNALISÉ
+      '<div style="background:var(--dark3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:10px">' +
+        '<div style="font-size:13px;font-weight:700;margin-bottom:8px">✏️ Envoyer un code personnalisé</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<input id="customCode" type="text" placeholder="Ex: LP-ABCD-EFGH" ' +
+            'style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:10px;color:#fff;font-size:12px;font-family:monospace;text-transform:uppercase;outline:none" ' +
+            'oninput="this.value=this.value.toUpperCase()">' +
+          '<button id="sendCustom" style="padding:10px 14px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:8px;font-size:20px;cursor:pointer">💬</button>' +
+        '</div>' +
+        '<div id="customMsg" style="font-size:11px;color:var(--muted);margin-top:6px"></div>' +
+      '</div>' +
+
+      '<button id="closeAdm2" style="width:100%;padding:12px;background:var(--dark3);border:1px solid rgba(255,255,255,0.07);border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer">Fermer</button>' +
+    '</div>';
+
+  document.body.appendChild(ov);
+
+  // Close buttons
+  document.getElementById('closeAdm').onclick = function(){ ov.remove(); };
+  document.getElementById('closeAdm2').onclick = function(){ ov.remove(); };
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+
+  // Wire send buttons
+  var btns = ov.querySelectorAll('.send-btn');
+  for (var i = 0; i < btns.length; i++) {
+    (function(btn) {
+      btn.addEventListener('click', function() {
+        sendCode(btn.dataset.code, btn.dataset.plan, btn.dataset.expire);
+        ov.remove();
+      });
+    })(btns[i]);
+  }
+
+  // Custom code send
+  document.getElementById('sendCustom').onclick = function() {
+    var inp = document.getElementById('customCode');
+    var msg = document.getElementById('customMsg');
+    var code = inp.value.trim().toUpperCase();
+    if (!code) { msg.textContent = 'Entrez un code !'; return; }
+    var info = validateCode(code);
+    if (!info) { msg.style.color = '#E53E3E'; msg.textContent = 'Code invalide !'; return; }
+    sendCode(code, info.plan, info.expire);
+    ov.remove();
+  };
+}
+
+  var used = JSON.parse(localStorage.getItem('lxa_used') || '[]');
+  var ADMIN_CODES = ['LP-WAJH-Y6FD','LP-ZX6C-YEC3','LP-PAGS-F8AE','LP-AGWT-878E','LP-HU3A-469D','LP-2T5K-3M8N','LP-9R4P-6QBX','LP-K7YN-2WSD','LP-MF3H-9JCV','LP-BX8L-4TNP','LM-28M5-A26Y','LM-GSD4-Z774','LM-PCUV-78DA','LM-3K9N-B5TX','LM-7YQW-M4ZR','LA-9JLY-3835','LA-AGRK-8F97','LA-9L8J-Z66A','LA-2WK5-7NTB','LA-6MR3-9YPX'];
+  var avail = ADMIN_CODES.filter(function(c){ return used.indexOf(c) === -1; });
+  var ov = document.createElement('div');
+  ov.className = 'modal-overlay show';
+  ov.id = 'adminOv';
+  var rows = avail.slice(0,20).map(function(c){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,0.04)">' +
+      '<div style="font-family:monospace;font-size:12px;color:var(--gold)">'+c+'</div>' +
+      '<button id="btn-'+c+'" style="padding:5px 10px;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">💬</button>' +
+    '</div>';
+  }).join('');
+  ov.innerHTML = '<div class="modal">' +
+    '<div class="modal-handle"></div>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">' +
+      '<div style="font-size:16px;font-weight:700;color:var(--gold)">⚙️ Panneau Admin</div>' +
+      '<button id="closeAdmin" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer">×</button>' +
+    '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">' +
+      '<div style="background:var(--dark3);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">150K</div><div style="font-size:10px;color:var(--muted)">Total codes</div></div>' +
+      '<div style="background:var(--dark3);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:900;color:#5FB98A">'+avail.length+'</div><div style="font-size:10px;color:var(--muted)">Disponibles</div></div>' +
+    '</div>' +
+    '<div style="font-size:13px;font-weight:700;margin-bottom:8px">📋 Codes disponibles</div>' +
+    '<div style="background:var(--dark3);border-radius:10px;padding:10px;max-height:220px;overflow-y:auto;margin-bottom:12px">' + rows + '</div>' +
+    '<button id="closeAdmin2" style="width:100%;padding:12px;background:var(--dark3);border:1px solid rgba(255,255,255,0.07);border-radius:10px;color:var(--muted);font-size:13px;cursor:pointer">Fermer</button>' +
+  '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e){ if(e.target===ov) ov.remove(); });
+
+
+function sendCode(code, plan, expire) {
+  var used = JSON.parse(localStorage.getItem('lxa_used') || '[]');
+  if (used.indexOf(code) === -1) { used.push(code); localStorage.setItem('lxa_used', JSON.stringify(used)); }
+  var planStr = plan || 'Premium';
+  var expireStr = expire || '30';
+  var msg = encodeURIComponent(
+    'Bonjour ! Votre acces LexiArabe Pro est pret !\n\n' +
+    'Code : ' + code + '\n' +
+    'Plan : ' + planStr + '\n' +
+    'Duree : ' + expireStr + ' jours\n\n' +
+    'Comment activer :\n' +
+    '1. Ouvrez LexiArabe Pro\n' +
+    '2. Appuyez sur Premium\n' +
+    '3. Entrez le code\n' +
+    '4. Appuyez ACTIVER\n\n' +
+    'Bonne etude ! 📚'
+  );
+  window.open('https://wa.me/?text='+msg, '_blank');
+  toast('Code envoyé : '+code);
+}
+
+function doSearch(val) {
+  STATE.query = val;
+  if (STATE.tab === 'words') renderWords();
+}
+
+window.addEventListener('load', function() {
+  STATE.premium = getPremiumStatus();
+  if (STATE.premium) {
+    // Files already loading via static tags - wait then render
+    setTimeout(function() {
+      loadPremiumWords(function() {
+        loadPremiumPhrases(function() {
+          loadPremiumDict(function() {
+            renderWords();
+          });
+        });
+      });
+    }, 500);
+  }
+  buildAlpha();
+  document.getElementById('favCount').textContent = STATE.favs.length;
+  setTimeout(function() {
+    document.getElementById('splash').classList.add('hide');
+    document.getElementById('app').classList.add('show');
+    renderWords();
+  }, 400);
+});
+
+// ══ PREMIUM WORDS (embedded) ══
+var WORDS_PREMIUM={
+'أ':[['أسبوع','osbou','semaine','week'],['أجر','ajr','salaire','salary'],['أرنب','arnab','lapin','rabbit'],['أصبع','osba','doigt','finger'],['أغنية','oghniya','chanson','song'],['أفضل','afdal','meilleur','better'],['أساس','assas','fondation','foundation'],['أسرة','osra','famille','family'],['أيام','ayyam','jours','days'],['أبواب','abwab','portes','doors'],['أحلام','ahlam','rêves','dreams'],['أخبار','akhbar','nouvelles','news'],['أدوات','adawat','outils','tools'],['أرقام','arqam','chiffres','numbers'],['أزهار','azhar','fleurs','flowers'],['أسواق','aswaq','marchés','markets'],['أصدقاء','asdiqa','amis','friends'],['أطفال','atfal','enfants','children'],['أفكار','afkar','idées','ideas'],['أماكن','amakin','lieux','places'],['إنسان','insan','être humain','human'],['إيمان','iman','foi','faith'],['إجابة','ijaba','réponse','answer'],['إجازة','ijaza','vacances','vacation'],['إرادة','irada','volonté','will'],['أستاذ','ostaz','professeur','professor'],['أمانة','amana','confiance','trust'],['أمير','amir','prince','prince'],['أميرة','amira','princesse','princess'],['أرز','orz','riz','rice'],['أداء','adaa','performance','performance'],['أولاد','awlad','garçons','boys'],['إعلان','ilan','annonce','announcement'],['إصلاح','islah','réforme','reform'],['أجداد','ajdad','ancêtres','ancestors'],['أرواح','arwah','âmes','souls'],['أسرار','asrar','secrets','secrets'],['أسماك','asmak','poissons','fish'],['أشكال','ashkal','formes','shapes'],['أصوات','aswat','sons','sounds'],['أعمال','amal','travaux','works'],['أقلام','aqlam','stylos','pens'],['أكواب','akwab','verres','glasses'],['أمراض','amrad','maladies','diseases'],['أنهار','anhar','rivières','rivers'],['أهداف','ahdaf','objectifs','goals'],['إبداع','ibda','créativité','creativity'],['إنجاز','injaz','accomplissement','achievement'],['أولوية','awlawiya','priorité','priority'],['أيدي','aydi','mains','hands'],['إضاءة','idaa','éclairage','lighting'],['أمثال','amthal','proverbes','proverbs'],['أنثى','ontha','femelle','female'],['إلهام','ilham','inspiration','inspiration'],['إنتاج','intaj','production','production'],['أمة','omma','nation','nation'],['أصل','asl','origine','origin'],['إخلاص','ikhlas','sincérité','sincerity'],['أمواج','amwaj','vagues','waves'],['أبطال','abtal','héros','heroes'],['أحداث','ahdath','événements','events'],['أخطاء','akhtaa','erreurs','errors'],['أسئلة','asila','questions','questions'],['إجراء','ijraa','procédure','procedure'],['أراضي','aradi','terres','lands'],['أبحاث','abhath','recherches','researches'],['أثاث','athath','meubles','furniture'],['أجهزة','ajhiza','appareils','devices'],['أحياء','ahyaa','quartiers','neighborhoods'],['أعداء','adaa','ennemis','enemies'],['أغراض','aghrrad','objets','objects'],['أقارب','aqarib','proches','relatives'],['أنواع','anwa','types','types'],['أوقات','awqat','moments','moments'],['إحساس','ihsas','sensation','feeling'],['إدارة','idara','gestion','management'],['إرشاد','irshad','guidance','guidance'],['إشارة','ishara','signal','signal'],['أبناء','abna','fils','sons'],['أحباب','ahbab','aimés','loved ones'],['أخلاق','akhlaq','morale','morality'],['أدباء','odabaa','littéraires','literati'],['أذكياء','adkhiyaa','intelligents','smart'],['ألوان','alwan','couleurs','colors'],['أنماط','anmat','motifs','patterns'],['إبهار','ibhar','fascination','fascination'],['إجهاد','ijhad','fatigue','fatigue'],['إحكام','ihkam','solidité','solidity'],['أبجد','abjad','alphabet','alphabet'],['أبراج','abraj','tours','towers']],
+'ب':[['برق','barq','éclair','lightning'],['برد','bard','froid','cold'],['بلد','balad','pays','country'],['بصل','basal','oignon','onion'],['بطاطس','bataatis','pommes de terre','potatoes'],['بطل','batal','héros','hero'],['برنامج','barnaamaj','programme','program'],['بساطة','basaata','simplicité','simplicity'],['بطاقة','bitaaqa','carte','card'],['بكاء','bukaa','pleurs','crying'],['بناء','binaa','construction','construction'],['بهجة','bahja','joie','joy'],['بوابة','bawwaba','portail','portal'],['بيئة','bia','environnement','environment'],['بيان','bayan','déclaration','statement'],['بيع','bay','vente','sale'],['بائع','bayi','vendeur','seller'],['بدر','badr','pleine lune','full moon'],['بدلة','badla','costume','suit'],['برج','burj','tour','tower'],['بركة','baraka','bénédiction','blessing'],['برمجة','barmaja','programmation','programming'],['برهان','burhan','preuve','proof'],['بسمة','basma','sourire','smile'],['بشارة','bishara','bonne nouvelle','good news'],['بصر','basar','vue','sight'],['بطولة','butula','championnat','championship'],['بعثة','batha','mission','mission'],['بقاء','baqa','survie','survival'],['بلبل','bulbul','rossignol','nightingale'],['بنفسج','banafsaj','violette','violet'],['بهاء','baha','splendeur','splendor'],['بواب','bawwab','portier','doorman'],['بحيرة','buhayra','lac','lake'],['بروتين','brutin','protéine','protein'],['بكتيريا','baktiriya','bactérie','bacteria'],['بلاستيك','blastik','plastique','plastic'],['بداية','bidaya','début','beginning'],['بذرة','badhra','graine','seed'],['براءة','baraa','innocence','innocence'],['بعيد','baid','loin','far'],['بغل','baghl','mulet','mule'],['بقية','baqiya','reste','remainder'],['بلاغة','balagha','éloquence','eloquence'],['بوصلة','bawsala','boussole','compass'],['بيطري','baytari','vétérinaire','veterinarian'],['بيولوجيا','biologia','biologie','biology'],['بازلاء','bazilaa','petits pois','peas'],['بلح','balah','datte','date fruit'],['بخار','bukhar','vapeur','steam'],['بساط','bisaat','tapis','carpet'],['بستاني','bustani','jardinier','gardener'],['بصمة','basma','empreinte','fingerprint'],['برودة','burudah','fraîcheur','coolness'],['بنيان','bunyan','édifice','edifice'],['باحث','bahith','chercheur','researcher'],['باخرة','bakhira','navire','ship'],['باقي','baqi','restant','remaining'],['بالغ','baligh','adulte','adult'],['بامية','bamya','gombo','okra'],['بحث','bahth','recherche','research'],['بخيل','bakhil','avare','miser'],['براكين','barakin','volcans','volcanoes'],['برامج','baramij','programmes','programs'],['بطاريات','batariyat','batteries','batteries'],['بنايات','banayat','bâtiments','buildings'],['بيانات','bayanat','données','data'],['بحار','bihar','mers','seas'],['بريطانيا','britaniya','Royaume-Uni','UK'],['بنما','banama','Panama','Panama'],['بهوتان','bhutan','Bhoutan','Bhutan'],['بيداء','baydaa','désert','desert'],['بيدر','baydar','grange','barn'],['بنية','bunya','structure','structure'],['برية','bariya','nature sauvage','wilderness'],['بيادة','bayada','blanchisserie','laundry'],['بهيمة','bahima','animal','animal'],['بروج','buruj','tours','towers'],['بحوث','buhuth','recherches','researches'],['بيوت','buyut','maisons','houses'],['بيوض','buyud','oeufs pl.','eggs pl.'],['بيبان','biban','portes pl.','doors pl.'],['بيعة','baya','allégeance','allegiance'],['بيعات','bayaat','ventes pl.','sales pl.'],['بحران','bahran','crise','crisis'],['بيات','bayat','hivernation','hibernation'],['بيان مكتوب','bayan maktub','déclaration écrite','written statement'],['بيضاء','bayda','blanche','white'],['بصرة','basra','Bassora','Basra'],['بذل','badhl','effort','effort']],
+'ت':[['تحدي','tahadi','défi','challenge'],['تذكرة','tadhkira','billet','ticket'],['تربية','tarbiya','éducation','upbringing'],['ترجمة','tarjama','traduction','translation'],['ترقية','tarqiya','promotion','promotion'],['تسوق','tasawwuq','shopping','shopping'],['تشجيع','tashji','encouragement','encouragement'],['تصميم','tasmim','design','design'],['تطوير','tatawwur','développement','development'],['تعاون','tawun','coopération','cooperation'],['تغيير','taghyir','changement','change'],['تفكير','tafkir','réflexion','thinking'],['تقدم','taqaddum','progrès','progress'],['تلفزيون','tilfizyon','télévision','television'],['تنمية','tanmiya','développement','development'],['توازن','tawazun','équilibre','balance'],['تاج','taj','couronne','crown'],['تحفة','tuhfa','chef-d\'oeuvre','masterpiece'],['تسامح','tasamuh','tolérance','tolerance'],['تصنيف','tasnif','classification','classification'],['تطبيق','tatbiq','application','application'],['تعبير','tabir','expression','expression'],['تفسير','tafsir','interprétation','interpretation'],['تقنية','taqniya','technologie','technology'],['تكرار','tikrar','répétition','repetition'],['توجيه','tawjih','orientation','orientation'],['تأثير','tathir','influence','influence'],['تأمين','tamin','assurance','insurance'],['تأمل','taamal','méditation','meditation'],['تابع','tabi','suivant','follower'],['تاجر','tajir','commerçant','merchant'],['تحضير','tahdrir','préparation','preparation'],['تخطيط','takhtit','planification','planning'],['تدريب','tadrib','entraînement','training'],['تدريس','tadris','enseignement','teaching'],['ترتيب','tartib','arrangement','arrangement'],['تزيين','tazyin','décoration','decoration'],['تسجيل','tasjil','enregistrement','recording'],['تصوير','taswir','photographie','photography'],['تضامن','tadamun','solidarité','solidarity'],['تطور','tatawwur','évolution','evolution'],['تعلم','talum','apprentissage','learning'],['تغذية','taghdhiya','nutrition','nutrition'],['تقييم','taqyim','évaluation','evaluation'],['تكلفة','taklufa','coût','cost'],['تلوث','talawwuth','pollution','pollution'],['توقف','tawaqquf','arrêt','stop'],['تواصل','tawasal','communication','communication'],['تواضع','tawadu','modestie','modesty'],['تحرير','tahrir','libération','liberation'],['تحليل','tahlil','analyse','analysis'],['تحسين','tahsin','amélioration','improvement'],['تحقيق','tahqiq','investigation','investigation'],['تخزين','takhzin','stockage','storage'],['تراجع','taraju','recul','retreat'],['تراكم','tarakum','accumulation','accumulation'],['تربة','turba','sol','soil'],['ترحيب','tarhib','accueil','welcome'],['تسهيل','tashil','facilitation','facilitation'],['تسليم','taslim','livraison','delivery'],['تصريح','tasrih','déclaration','declaration'],['تضخم','tadakhkhum','inflation','inflation'],['تطرف','tataruf','extrémisme','extremism'],['تعداد','tadad','recensement','census'],['تعزيز','taziz','renforcement','strengthening'],['تعويض','tawid','compensation','compensation'],['تنظيم','tandhim','organisation','organization'],['تنافس','tanafus','compétition','competition'],['تناغم','tanaghum','harmonie','harmony'],['توثيق','tawthiq','documentation','documentation'],['تكافل','takaful','solidarité','solidarity'],['تمكين','tamkin','autonomisation','empowerment'],['تنويع','tanwi','diversification','diversification'],['توسع','tawassu','expansion','expansion'],['تهيئة','tahia','préparation','preparation'],['توليف','tawlif','composition','composition'],['تيقظ','tayaqquzdh','vigilance','vigilance'],['تبني','tabanni','adoption','adoption'],['تجميع','tajmi','collecte','collection'],['تحفيز','tahfiz','motivation','motivation'],['تخفيض','takhfid','réduction','reduction'],['تدفق','tadaffuq','flux','flow'],['تذليل','tadhlil','facilitation','facilitation'],['تربح','tarabuh','profit','profit'],['ترقب','taraqqub','attente','expectation'],['تسارع','tasarru','accélération','acceleration'],['تشابك','tashabuk','enchevêtrement','entanglement'],['تكيف','takayyuf','adaptation','adaptation'],['تلاشي','talashi','disparition','disappearance'],['تلقائي','talqa\'i','spontané','spontaneous']],
+'ث':[['ثمانية','thamaniya','huit','eight'],['ثابت','thabit','stable','stable'],['ثانوي','thanawi','secondaire','secondary'],['ثمين','thamin','précieux','precious'],['ثقيل','thaqil','lourd','heavy'],['ثري','thary','riche','wealthy'],['ثناء','thana','éloge','praise'],['ثوري','thawri','révolutionnaire','revolutionary'],['ثراء','tharaa','richesse','abundance'],['ثقب','thuqb','trou','hole'],['ثلث','thulth','tiers','third'],['ثنائي','thunai','duo','duo'],['ثياب','thiyab','vêtements','clothes'],['ثور','thawr','taureau','bull'],['ثبات','thabat','stabilité','stability'],['ثعبان','thaban','serpent','snake'],['ثغر','thaghr','brèche','gap'],['ثلاجة','thallaja','réfrigérateur','refrigerator'],['ثقافي','thaqafi','culturel','cultural'],['ثمرة','thamara','résultat','result'],['ثدي','thady','sein','breast'],['ثروات','tharwat','richesses','riches'],['ثيران','thiryan','taureaux','bulls'],['ثلوج','thuluj','neiges','snows'],['ثقافات','thaqafat','cultures','cultures'],['ثاني','thani','deuxième','second'],['ثدييات','thadiyyat','mammifères','mammals'],['ثأر','thar','vengeance','vengeance'],['ثانياً','thaniyan','deuxièmement','secondly'],['ثانوية','thanawiya','lycée','high school'],['ثلاثون','thalathoune','trente','thirty'],['ثمانون','thamanoun','quatre-vingts','eighty'],['ثقل','thuql','poids','weight'],['ثكنة','thukna','caserne','barracks'],['ثنية','thaniya','courbe','curve'],['ثيمة','thyma','thème','theme'],['ثبوت','thuboute','confirmation','confirmation'],['ثلاثي','thulathi','triple','triple'],['ثقيلة','thaqila','lourde','heavy f.'],['ثلج جاف','thalj jaf','glace sèche','dry ice'],['ثمالة','thumala','ivresse','intoxication'],['ثمل','thimil','ivre','drunk'],['ثنائية','thunaiiya','dualité','duality'],['ثرثار','tharthar','bavard','chatterbox'],['ثواب','thawab','récompense','divine reward'],['ثفل','thufl','sédiment','sediment'],['ثجر','thajar','abondance','abundance'],['ثدي الإبل','thady alibil','pis de chameau','camel udder'],['ثروة معدنية','tharwa madaniya','richesse minérale','mineral wealth'],['ثروة طبيعية','tharwa tabia','ressource naturelle','natural resource'],['ثلاثة عشر','thalathat ashar','treize','thirteen'],['ثمانية عشر','thamaniyata ashar','dix-huit','eighteen'],['ثبر','thabr','endurance','endurance'],['ثيولوجيا','thiologia','théologie','theology'],['ثلث الليل','thulth allayl','tiers de nuit','third of night'],['ثقة بالنفس','thiqa bilnafs','confiance en soi','self confidence'],['ثقافة الفرد','thaqafat alfard','culture individuelle','individual culture'],['ثقب الأوزون','thuqb alawzon','trou d\'ozone','ozone hole'],['ثمار العمل','thimar alamal','fruits du travail','fruits of labor'],['ثلاثة أضعاف','thalatha adaaf','triple','threefold'],['ثدييات بحرية','thadiyyat bahriya','mammifères marins','marine mammals'],['ثلاثية الأبعاد','thulathhiyat alabaad','tridimensionnel','3D'],['ثنائي الأبعاد','thunai alabaad','bidimensionnel','2D'],['ثمانمئة','thamanumia','huit cents','eight hundred'],['ثلاثمئة','thalathumia','trois cents','three hundred'],['ثرثرة','tharthara','bavardage','chatter'],['ثراء فاحش','tharaa fahish','richesse excessive','excessive wealth'],['ثقافة الخوف','thaqafat alkhawf','culture de peur','fear culture'],['ثقة المجتمع','thiqa almujjtama','confiance sociale','social trust'],['ثروة بشرية','tharwa bashariya','ressource humaine','human resource'],['ثعلبة','thalaba','renardière','fox family'],['ثورة أفكار','thawrat afkar','brainstorming','brainstorming'],['ثمرة الصبر','thamarat alsabr','fruit de la patience','fruit of patience'],['ثناء وتقدير','thana wa taqdeer','éloge et appréciation','praise and appreciation'],['ثورة تقنية','thawra taqniya','révolution technologique','tech revolution'],['ثقة مشتركة','thiqa mushtaraka','confiance mutuelle','mutual trust'],['ثروة فكرية','tharwa fikriya','richesse intellectuelle','intellectual wealth'],['ثبات الشخصية','thabat alshakhsiya','stabilité du caractère','personality stability'],['ثقافة التسامح','thaqafat altasamuh','culture de tolérance','tolerance culture'],['ثمن التضحية','thaman altadhiya','prix du sacrifice','price of sacrifice'],['ثلج القطب','thalj alqutb','glace polaire','polar ice'],['ثروة وطنية','tharwa wataniya','richesse nationale','national wealth'],['ثقل المسؤولية','thuql almasuliya','poids de responsabilité','weight of responsibility'],['ثوابت','thawabita','constantes','constants'],['ثريا','thuraya','lustre','chandelier'],['ثعالب','thalib','renards','foxes'],['ثقوب','thuqub','trous','holes']],
+'ج':[['جمعة','juma','vendredi','Friday'],['جنة','janna','paradis','paradise'],['جامعة','jamia','université','university'],['جيران','jiran','voisins','neighbors'],['جذر','jidhr','racine','root'],['جسم','jism','corps','body'],['جلد','jild','peau','skin'],['جمهور','jumhour','public','public'],['جنوب','janub','sud','south'],['جوع','jou','faim','hunger'],['جوهر','jawhar','essence','essence'],['جاهز','jahiz','prêt','ready'],['جار','jar','voisin','neighbor'],['جاذبية','jadhbiya','gravité','gravity'],['جائزة','jaiza','prix','prize'],['جانب','janib','côté','side'],['جبهة','jabha','front','front'],['جد','jadd','grand-père','grandfather'],['جدار','jidar','mur','wall'],['جدة','jadda','grand-mère','grandmother'],['جدول','jadwal','tableau','schedule'],['جذاب','jaththab','attrayant','attractive'],['جذب','jadhb','attraction','attraction'],['جرس','jaras','cloche','bell'],['جزء','juz','partie','part'],['جزيرة','jazira','île','island'],['جسارة','jasara','audace','audacity'],['جغرافيا','jugrafiya','géographie','geography'],['جفاف','jafaf','sécheresse','drought'],['جلسة','jalsa','séance','session'],['جمع','jam','rassemblement','gathering'],['جمعية','jamiya','association','association'],['جميل','jamil','beau','beautiful'],['جندب','jundb','sauterelle','grasshopper'],['جندي','jundi','soldat','soldier'],['جهاد','jihad','effort','effort'],['جهل','jahl','ignorance','ignorance'],['جو','jaww','atmosphère','atmosphere'],['جواب','jawab','réponse','answer'],['جودة','jawda','qualité','quality'],['جوز','jawz','noix','walnut'],['جوهرة','jawhara','bijou','jewel'],['جيد','jayyid','bien','good'],['جيل','jil','génération','generation'],['جبال','jibal','montagnes','mountains'],['جمهورية','jumhuriya','république','republic'],['جذع','jidh','tronc','trunk'],['جنائز','janaaiz','funérailles','funerals'],['جنسية','jinsiya','nationalité','nationality'],['جوارب','jawarib','chaussettes','socks'],['جيب','jayb','poche','pocket'],['جيتار','jitar','guitare','guitar'],['جحر','juhr','terrier','burrow'],['جرثومة','jirthuma','microbe','microbe'],['جزارة','jizara','boucherie','butchery'],['جزاء','jaza','sanction','sanction'],['جسد','jasad','corps','body flesh'],['جغرافيا سياسية','jugrafiya siyasiya','géopolitique','geopolitics'],['جفن','jafn','paupière','eyelid'],['جلاء','jala','clarification','clarification'],['جمادات','jamaddat','minéraux','minerals'],['جنين','janin','fœtus','fetus'],['جهاز عصبي','jihaz asabi','système nerveux','nervous system'],['جهاز هضمي','jihaz hadmi','système digestif','digestive system'],['جوائز','jawa\'iz','prix pl.','prizes'],['جيولوجيا','jiyulujiya','géologie','geology'],['جبروت','jabbrut','puissance','might'],['جباية','jabaya','collecte impôts','tax collection'],['جبن','jubn','fromage/lâcheté','cheese/cowardice'],['جحود','juhud','ingratitude','ingratitude'],['جدية','jiddiya','sérieux','seriousness'],['جذوة','jadhwa','braise','ember'],['جراحة','jiraha','chirurgie','surgery'],['جراحة تجميلية','jiraha tajmiliya','chirurgie esthétique','plastic surgery'],['جرائم','jara\'im','crimes','crimes'],['جروح','jruh','blessures','wounds'],['جريان','jiryan','écoulement','flow'],['جشع','jasha','avidité','greed'],['جلطة','jalta','caillot','clot'],['جماجم','jamajim','crânes','skulls'],['جماهير','jamahir','foules','masses'],['جمباز','jumbaz','gymnase','gymnastics'],['جمهوريات','jumhuriyat','républiques','republics'],['جنة عدن','jannat adan','Éden','Eden'],['جهد','juhd','effort','effort'],['جواسيس','jawasis','espions','spies'],['جهات','jihat','directions','directions'],['جمركي','jumruki','douanier','customs'],['جيولوجي','jiyuluju','géologue','geologist'],['جريئ','jari','courageux','courageous']],
+'ح':[['حذاء','hidha','chaussure','shoe'],['حرارة','harara','chaleur','heat'],['حزن','huzn','tristesse','sadness'],['حسد','hasad','jalousie','jealousy'],['حصن','hisn','forteresse','fortress'],['حفل','hafl','fête','party'],['حكمة','hikma','sagesse','wisdom'],['حلم','hulm','rêve','dream'],['حماية','himaya','protection','protection'],['حيوان','hayawan','animal','animal'],['حوار','hiwar','dialogue','dialogue'],['حاسوب','hasub','ordinateur','computer'],['حاضر','hadir','présent','present'],['حاكم','hakim','dirigeant','ruler'],['حبة','habba','graine','seed'],['حبر','hibr','encre','ink'],['حجاب','hijab','voile','veil'],['حجم','hajm','taille','size'],['حدث','hadath','événement','event'],['حدود','hudud','frontières','borders'],['حرب','harb','guerre','war'],['حروف','huruf','lettres','letters'],['حريق','hariq','incendie','fire'],['حزب','hizb','parti politique','political party'],['حساب','hisab','compte','account'],['حشرة','hashara','insecte','insect'],['حصة','hissa','part','share'],['حضور','hudur','présence','presence'],['حقل','haql','champ','field'],['حقيبة','haqiba','sac','bag'],['حلال','halal','licite','halal'],['حلوى','halwa','bonbon','candy'],['حمار','himar','âne','donkey'],['حنين','hanin','nostalgie','nostalgia'],['حواس','hawas','sens','senses'],['حياء','haya','pudeur','modesty'],['حيلة','hila','ruse','trick'],['حاجة','haja','besoin','need'],['حجة','hujja','argument','argument'],['حديد','hadid','fer','iron'],['حراسة','hirasa','garde','guard'],['حرفة','hirfa','métier','craft'],['حزام','hizam','ceinture','belt'],['حساسية','hassasiya','allergie','allergy'],['حسن','hasan','bien','good'],['حصاد','hasad','récolte','harvest'],['حصان','hisan','cheval','horse'],['حضانة','hadana','garderie','nursery'],['حظ','hazz','chance','luck'],['حفاز','haffaz','catalyseur','catalyst'],['حقن','huqn','injection','injection'],['حكاية','hikaya','histoire','tale'],['حلقة','halqa','anneau','ring'],['حلول','hulul','solutions','solutions'],['حلويات','halwiyat','friandises','sweets'],['حمام','hamam','bain','bath'],['حمامة','hamama','colombe','dove'],['حملة','hamla','campagne','campaign'],['حواجز','hawajiz','barrières','barriers'],['حوافز','hawafiz','incitations','incentives'],['حبوب','hubub','céréales','cereals'],['حدقة','hadaqa','pupille','pupil eye'],['حركة','haraka','mouvement','movement'],['حروب','hurub','guerres','wars'],['حسابي','hisabi','mathématique','mathematical'],['حشاش','hashshash','herboriste','herbalist'],['حصص','hisas','leçons','lessons'],['حقائق','haqa\'iq','faits','facts'],['حكم','hukm','jugement','judgment'],['حلف','half','alliance','alliance'],['حليفة','halifa','alliée','ally'],['حمض','hamd','acide','acid'],['حيادية','hiyadiya','neutralité','neutrality'],['حياة برية','hayat bariya','vie sauvage','wildlife'],['حرارة الجسم','hararat aljism','température corporelle','body temperature'],['حرية التعبير','hurriyat altabir','liberté d\'expression','freedom of expression'],['حق الاقتراع','haq aliqtiraw','droit de vote','right to vote'],['حكم ذاتي','hukm dhati','autonomie','autonomy'],['حماية البيئة','himayat albia','protection environnementale','environmental protection'],['حضارة إسلامية','hadara islamiya','civilisation islamique','Islamic civilization'],['حرب باردة','harb barida','guerre froide','cold war'],['حل النزاعات','hall alnizaat','résolution des conflits','conflict resolution'],['حيوانات مهددة','hayawanat muhaddada','espèces menacées','endangered species'],['حقوق الإنسان','huquq alinsan','droits de l\'homme','human rights'],['حليف','halif','allié','ally'],['حوض','hawd','bassin','basin'],['حمد','hamd','louange','praise'],['حيازة','hiaza','possession','possession'],['حيوية','hayawiya','vitalité','vitality'],['حذر','hadhar','prudence','caution']],
+'خ':[['خريف','kharif','automne','autumn'],['خريطة','kharita','carte','map'],['خزانة','khizana','armoire','wardrobe'],['خطأ','khata','erreur','error'],['خطوة','khatwa','pas','step'],['خلف','khalf','derrière','behind'],['خمسة','khamsa','cinq','five'],['خوف','khawf','peur','fear'],['خيال','khayal','imagination','imagination'],['خيمة','khayma','tente','tent'],['خاتم','khatim','bague','ring'],['خبرة','khibra','expérience','experience'],['خبير','khabir','expert','expert'],['ختم','khatm','sceau','seal'],['خدمة','khidma','service','service'],['خرافة','khurafa','légende','legend'],['خزف','khazaf','céramique','ceramics'],['خصم','khasm','remise','discount'],['خضار','khudar','légumes','vegetables'],['خطاب','khitab','discours','speech'],['خطة','khitta','plan','plan'],['خفة','khiffa','légèreté','lightness'],['خليفة','khalifa','calife','caliph'],['خلاصة','khulasa','résumé','summary'],['خمول','khumul','paresse','laziness'],['خيانة','khiyana','trahison','betrayal'],['خزينة','khazina','trésor','treasury'],['خطيب','khatib','orateur','speaker'],['خطيئة','khati\'a','péché','sin'],['خيط','khayt','fil','thread'],['خياطة','khiyata','couture','sewing'],['خبيث','khabith','malveillant','malevolent'],['خداع','khidaa','tromperie','deception'],['خسارة','khasara','perte','loss'],['خشية','khashya','crainte','reverence'],['خضوع','khudhu','soumission','submission'],['خطورة','khattura','dangerosité','dangerousness'],['خفية','khufya','secret','secret'],['خلود','khulud','immortalité','immortality'],['خمر','khamr','alcool','alcohol'],['خلافة','khilafa','califat','caliphate'],['خلاف','khilaf','désaccord','disagreement'],['خلاص','khalas','salut','salvation'],['خنزير','khanzir','cochon','pig'],['خواتم','khawatim','bagues','rings'],['خزي','khizy','honte','shame'],['خصم نقدي','khasm naqdi','remise espèces','cash discount'],['خليج فارسي','khalij farsi','Golfe Persique','Persian Gulf'],['خياط','khayat','tailleur','tailor'],['خدعة','khudaa','ruse','trick'],['خراب','kharab','ruine','ruin'],['خضرة','khudra','verdure','greenery'],['خسارة مالية','khasara maliya','perte financière','financial loss'],['خواص','khawas','propriétés','properties'],['خصوبة','khusuba','fertilité','fertility'],['خروج','khuruj','sortie','exit'],['خواطر','khawatir','pensées','thoughts'],['خيار صعب','khiyar saab','choix difficile','difficult choice'],['خليط','khalit','mélange','mixture'],['خطاف','khuttaf','crochet','hook'],['خمسون','khamson','cinquante','fifty'],['خنفساء','khunfusa','scarabée','beetle'],['خباز','khabbaz','boulanger','baker'],['خصيصاً','khusysan','spécialement','specially'],['خطوط','khutut','lignes','lines'],['خيل','khayl','chevaux','horses'],['خيمياء','khimiya','chimie','chemistry'],['خيرات','khayrat','bonnes choses','blessings'],['خطط','khitat','plans','plans'],['خطاطة','khitata','calligraphie','calligraphy'],['خراطيم','kharatim','tuyaux','hoses'],['خزائن','khaza\'in','trésors','treasures'],['خضروات','khudrawat','légumes','vegetables'],['خطابة','khitaba','éloquence','eloquence'],['خيرية','khayriya','charitable','charitable'],['خدمات اجتماعية','khidmat ijtimaia','services sociaux','social services'],['خلايا عصبية','khilaya asabiya','neurones','neurons'],['خسارة فادحة','khasara fadiha','perte grave','serious loss'],['خطب مرفوضة','khutab marfuda','demandes rejetées','rejected proposals'],['خريطة الطريق','kharita altariq','feuille de route','road map'],['خروج طارئ','khuruj tari','sortie d\'urgence','emergency exit'],['خلاف سياسي','khilaf siyasi','désaccord politique','political disagreement'],['خدمة عملاء','khidmat umala','service client','customer service'],['خبرات متنوعة','khibrat mutanawia','expériences variées','varied experiences'],['خصائص المنتج','khasa\'is almuntaj','caractéristiques produit','product characteristics'],['خطوات عملية','khatawat amaliya','étapes pratiques','practical steps'],['خلاصة القول','khulasa alqawl','en résumé','in summary'],['خبر عاجل','khabar ajil','nouvelle urgente','breaking news'],['خدمة مجتمع','khidmat mujtama','service communautaire','community service']],
+'د':[['دقيقة','daqiqa','minute','minute'],['دكتور','duktour','docteur','doctor'],['دماغ','dimagh','cerveau','brain'],['دموع','dumu','larmes','tears'],['دنيا','dunya','monde','world'],['دهاء','daha','ruse','cleverness'],['دوام','dawam','permanence','permanence'],['دور','dawr','rôle','role'],['ديك','dik','coq','rooster'],['ديمقراطية','dimiqratiya','démocratie','democracy'],['دائم','daim','permanent','permanent'],['دارس','daris','étudiant','student'],['داعية','daiya','prédicateur','preacher'],['دافئ','dafi','chaud','warm'],['دافع','dafi','motivation','motivation'],['دخان','dukhan','fumée','smoke'],['دخول','dukhul','entrée','entry'],['دراجة','darraja','vélo','bicycle'],['دراسة','dirasa','études','studies'],['دراما','drama','drame','drama'],['درجة','daraja','degré','degree'],['درع','dir','bouclier','shield'],['دستور','dustur','constitution','constitution'],['دعاء','dua','prière','prayer'],['دعم','daam','soutien','support'],['دفاع','difaa','défense','defense'],['دفتر','daftar','cahier','notebook'],['دقة','diqqa','précision','precision'],['دكان','dikkan','boutique','shop'],['دلالة','dalala','signification','meaning'],['دماء','dima','sangs','bloods'],['دهشة','dahsha','stupéfaction','astonishment'],['دواب','dawab','bêtes','beasts'],['دولاب','dulab','armoire','wardrobe'],['دولي','dawli','international','international'],['دواعي','dawai','raisons','reasons'],['داخلي','dakhili','intérieur','interior'],['دراسات','dirasat','études','studies'],['دقائق','daqa\'iq','minutes','minutes'],['دكاكين','dikikin','boutiques','shops'],['دلتا','delta','delta','delta'],['ديانة','diyana','religion','religion'],['داهية','dahiya','génie','genius'],['دائرة','daira','cercle','circle'],['دخيل','dakhil','intrus','intruder'],['دردشة','dardasha','discussion','chat'],['دعوة','dawa','invitation','invitation'],['دفق','dafaq','flux','flow'],['دهليز','dahliz','couloir','corridor'],['دوحة','dawha','grand arbre','large tree'],['دهون','duhun','graisses','fats'],['دجال','dajjal','imposteur','impostor'],['دكتاتور','diktatur','dictateur','dictator'],['دوامة','dawwama','tourbillon','whirlpool'],['دودة','dawda','ver','worm'],['دوري أبطال','dawri abtal','ligue des champions','champions league'],['دولة الرفاه','dawlat alrafah','État-providence','welfare state'],['دهشة عارمة','dahsha arima','stupéfaction totale','total astonishment'],['دراسة معمقة','dirasa muammaqa','étude approfondie','in-depth study'],['دراسة ميدانية','dirasa maydaniya','étude de terrain','field study'],['درجة حرارة','daraja harara','température','temperature'],['درس مكثف','dars mukathif','leçon intensive','intensive lesson'],['دفاع عن النفس','difaa an alnafs','autodéfense','self-defense'],['دقة متناهية','diqqa mutanahiya','précision extrême','extreme precision'],['دليل علمي','dalil ilmi','preuve scientifique','scientific evidence'],['دور قيادي','dawr qiyadi','rôle de leadership','leadership role'],['دوام مستمر','dawam mustamirr','continuité permanente','permanent continuity'],['ديمقراطية ليبرالية','dimiqratiya libariya','démocratie libérale','liberal democracy'],['دور المرأة','dawr almara','rôle de la femme','role of women'],['دعم اجتماعي','daam ijtimaii','soutien social','social support'],['دفء العلاقات','difa alalaqqat','chaleur des relations','warmth of relations'],['دخول البرلمان','dukhul albarlamaan','entrée au parlement','entering parliament'],['دراسة الاقتصاد','dirasa aliqtisad','étude de l\'économie','study of economics'],['دعم مالي','daam mali','soutien financier','financial support'],['دوري كرة القدم','dawri kurat alqadam','ligue de football','football league'],['دكتوراه','dukturah','doctorat','doctorate'],['دوليات','dawliyat','affaires internationales','international affairs'],['دبلوماسية','diblumaisiya','diplomatie','diplomacy'],['داخلية وخارجية','dakhiliya wa kharijiya','intérieur et extérieur','interior and exterior'],['دفاعية','difaiya','défensive','defensive'],['دوامات مائية','dawwamat maiiya','tourbillons aquatiques','water whirlpools'],['دورة','dawra','cycle','cycle'],['ديون','dyun','dettes','debts'],['دبلوماسي','diblumasi','diplomate','diplomat'],['دعائم','daaim','piliers','pillars'],['دلافين','dalalfin','dauphins','dolphins'],['دمى','duman','poupées','dolls'],['دواجن','dawajin','volailles','poultry'],['دوخة','dawkha','vertige','dizziness']],
+'ذ':[['ذهن','dhihn','esprit','mind'],['ذرية','dhurriya','descendants','offspring'],['ذمة','dhimma','responsabilité','responsibility'],['ذروة','dhurwa','sommet','peak'],['ذبح','dhabh','sacrifice','sacrifice'],['ذكي','dhaki','intelligent','intelligent'],['ذات','dhat','soi-même','self'],['ذراع','dhiraa','bras','arm'],['ذاب','dhab','fondu','melted'],['ذاق','dhaqa','goûter','taste'],['ذهول','dhahul','stupéfaction','amazement'],['ذلة','dhilla','humiliation','humiliation'],['ذكرى','dhikra','souvenir','memory'],['ذاكر','dhakir','studieux','studious'],['ذاكرات','dhakiarat','mémoires','memories'],['ذباب','dhubab','mouches','flies'],['ذئاب','dhi\'ab','loups','wolves'],['ذهبي','dhahabi','doré','golden'],['ذنوب','dhunub','péchés','sins'],['ذيول','dhuyul','queues','tails'],['ذكريات','dhikrayat','souvenirs','memories'],['ذكور','dhukur','mâles','males'],['ذاتية','dhatiya','personnalité','personality'],['ذرات','dhurrat','atomes','atoms'],['ذكورة','dhukura','masculinité','masculinity'],['ذكاء اصطناعي','dhaka istitnai','intelligence artificielle','artificial intelligence'],['ذاكرة طويلة','dhakira tawila','longue mémoire','long memory'],['ذوق رفيع','dhawq rafi','bon goût','good taste'],['ذرة كيميائية','dhurra kimia','atome chimique','chemical atom'],['ذيل السمكة','dhayl alsamaka','queue du poisson','fish tail'],['ذبابة الفاكهة','dhubabat alfakiha','mouche des fruits','fruit fly'],['ذكاء عاطفي','dhakaa atifi','intelligence émotionnelle','emotional intelligence'],['ذاكرة قصيرة','dhakira qasira','mémoire courte','short memory'],['ذروة الجبل','dhurwat aljabal','sommet de la montagne','mountain peak'],['ذهول تام','dhahul tamm','stupéfaction totale','total amazement'],['ذاتي التعلم','dhati altaalum','autodidacte','self-learning'],['ذكريات الطفولة','dhikrayat altufula','souvenirs d\'enfance','childhood memories'],['ذوق فني','dhawq fanni','goût artistique','artistic taste'],['ذباحة','dhiabaha','abattage','slaughter'],['ذاكرة حاسوب','dhakira hasub','mémoire ordinateur','computer memory'],['ذكر الله','dhikr allah','rappel de Dieu','remembrance of God'],['ذاكرة جماعية','dhakira jamaa','mémoire collective','collective memory'],['ذئب البحر','dhib albahr','loup de mer','sea wolf'],['ذنب شخصي','dhanb shakhsi','faute personnelle','personal fault'],['ذهب خالص','dhahab khalis','or pur','pure gold'],['ذرية صالحة','dhurriya saliha','progéniture vertueuse','virtuous offspring'],['ذكاء فطري','dhakaa fitri','intelligence naturelle','natural intelligence'],['ذروة النجاح','dhurwat alnajah','sommet du succès','peak of success'],['ذكرى مؤلمة','dhikra mu\'lima','souvenir douloureux','painful memory'],['ذوق سيء','dhawq sayyi','mauvais goût','bad taste'],['ذنب وعقاب','dhanb wa iqab','péché et punition','sin and punishment'],['ذاتية الإنسان','dhatiyat alinsan','personnalité humaine','human personality'],['ذهب إلى','dhahab ila','aller à','go to'],['ذهاب وإياب','dhahab wa iyab','aller-retour','round trip'],['ذكاء رياضي','dhakaa riyadi','intelligence mathématique','mathematical intelligence'],['ذاكرة وصول عشوائي','dhakira wusul ashwa','RAM mémoire','random access memory'],['ذرية إبراهيم','dhurriyat ibrahim','descendants d\'Ibrahim','descendants of Ibrahim'],['ذيل المذنب','dhayl almudhnib','queue de comète','comet tail'],['ذكاء لغوي','dhakaa lughawi','intelligence linguistique','linguistic intelligence'],['ذاكرة الجهاز','dhakira aljihaz','mémoire du dispositif','device memory'],['ذبذبة','dhabdhaba','vibration','vibration'],['ذبول','dhubul','flétrissement','withering'],['ذعر','dha\'r','panique','panic'],['ذفر','dhafar','victoire','victory'],['ذقن','dhaqan','menton','chin'],['ذكاء بشري','dhakaa bashari','intelligence humaine','human intelligence'],['ذنابة','dhanaba','queue','tail end'],['ذهاب','dhahab','départ','departure'],['ذيوع','dhuyuu','diffusion','diffusion'],['ذاع','dha','se répandre','spread'],['ذبول النبات','dhubul alnabat','flétrissement plante','plant withering'],['ذكاء مصطنع','dhakaa mustana','IA artificielle','artificial AI'],['ذبح الخروف','dhabh alkharruf','abattage mouton','sheep slaughter'],['ذهب وفضة','dhahab wa fidda','or et argent','gold and silver'],['ذوق ومنطق','dhawq wa mantiq','goût et logique','taste and logic'],['ذاكرة خارجية','dhakira kharijiya','mémoire externe','external memory'],['ذرية آدم','dhurriyat adam','descendants d\'Adam','descendants of Adam'],['ذبذبة كهربائية','dhabdhaba kahraba','vibration électrique','electrical vibration'],['ذهاب للمدرسة','dhahab lilmadrasa','aller à l\'école','going to school'],['ذكرى الاستقلال','dhikra alistiqllal','anniversaire indépendance','independence anniversary'],['ذوق المجتمع','dhawq almujjtama','goût de la société','society taste'],['ذهول الجمهور','dhahul aljumhur','stupéfaction du public','audience amazement'],['ذكاء الطيور','dhakaa altuyur','intelligence des oiseaux','bird intelligence'],['ذخيرة حربية','dhakirah harbiya','munitions de guerre','war ammunition'],['ذيل الطائرة','dhayl alta\'ira','queue de l\'avion','aircraft tail'],['ذراع آلي','dhiraa ali','bras robotique','robotic arm'],['ذكاء جماعي','dhakaa jamai','intelligence collective','collective intelligence'],['ذروة الحياة','dhurwat alhayat','apogée de la vie','peak of life'],['ذريعة','dhaira','prétexte','pretext']],
+'ر':[['رئيس','raies','président','president'],['رياضة','riyada','sport','sport'],['رأي','ray','opinion','opinion'],['رزق','rizq','subsistance','sustenance'],['رعد','raid','tonnerre','thunder'],['رسول','rasul','messager','messenger'],['رحمة','rahma','miséricorde','mercy'],['روضة','rawda','jardin','garden'],['رقم','raqm','numéro','number'],['ريال','riyal','riyal','riyal'],['راحة','raha','repos','rest'],['ربح','ribh','profit','profit'],['رجاء','raja','espoir','hope'],['رحيل','rahil','départ','departure'],['رذيلة','radhila','vice','vice'],['رشاد','rashad','sagesse','wisdom'],['رصيد','rasid','solde','balance'],['رطوبة','rutuba','humidité','humidity'],['رعاية','riaya','soin','care'],['رغبة','raghba','désir','desire'],['رفاهية','rafahiya','bien-être','welfare'],['رقابة','riqaba','surveillance','surveillance'],['رمز','ramz','symbole','symbol'],['رهان','rihan','pari','bet'],['روابط','rawabita','liens','links'],['رواية','riwaya','roman','novel'],['ريادة','riyada','pionnier','pioneering'],['رياضيات','riyadiyat','mathématiques','mathematics'],['رتبة','rutba','rang','rank'],['ردة فعل','raddat fal','réaction','reaction'],['رفض','rafd','refus','refusal'],['رقة','riqqa','douceur','softness'],['رمانة','rummana','grenade fruit','pomegranate'],['رفع','rafa','élévation','elevation'],['روتين','rutin','routine','routine'],['رياضي','riyadi','sportif','sportsman'],['ريفي','rifi','rural','rural'],['رئة','ri\'a','poumon','lung'],['رأي عام','ray amm','opinion publique','public opinion'],['رابطة','rabita','association','association'],['راتب','ratib','salaire','salary'],['رادار','radar','radar','radar'],['راديو','radio','radio','radio'],['رافد','rafid','affluent','tributary'],['راكب','rakib','passager','passenger'],['رامز','ramiz','symbolique','symbolic'],['رباط','ribat','lien','bond'],['ربيع العرب','rabia alarab','printemps arabe','Arab spring'],['رحلة جوية','rihla jawwiya','vol aérien','flight'],['رحلة بحرية','rihla bahriya','voyage maritime','sea voyage'],['رحلة برية','rihla barriya','voyage terrestre','land journey'],['رسالة دكتوراه','risalat duktura','thèse de doctorat','doctoral thesis'],['رصد الزلازل','rasad alzalazil','surveillance séismes','earthquake monitoring'],['رعاية صحية','riaya sihiya','soins de santé','healthcare'],['رغبة في التعلم','raghba fi altaalum','désir d\'apprendre','desire to learn'],['رفاهية اجتماعية','rafahiya ijtimaia','bien-être social','social welfare'],['رقابة مالية','riqaba maliya','contrôle financier','financial control'],['رواية تاريخية','riwaya tarikhiya','roman historique','historical novel'],['ريادة أعمال','riyada aamal','entrepreneuriat','entrepreneurship'],['ريادة تقنية','riyada taqniya','pionnier technologique','tech pioneer'],['رياضة مائية','riyada maiiya','sport nautique','water sport'],['رئاسة الوزراء','ri\'asat alwuzara','premier ministère','prime ministry'],['رادع قانوني','radi qanuni','dissuasion légale','legal deterrent'],['رابطة عربية','rabita arabiya','ligue arabe','Arab league'],['رحم الأم','rahm alomm','utérus maternel','maternal uterus'],['روح الرياضة','ruh alriyada','esprit sportif','sporting spirit'],['روح الفريق','ruh alfariq','esprit d\'équipe','team spirit'],['رواج تجاري','rawaj tijari','prospérité commerciale','commercial prosperity'],['رواسب تاريخية','rawasib tarikhiya','dépôts historiques','historical deposits'],['رواية اجتماعية','riwaya ijtimaia','roman social','social novel'],['رياح موسمية','riyah mawsimiya','vents saisonniers','seasonal winds'],['ريح التغيير','rih altaghyir','vent du changement','wind of change'],['رمز وطني','ramz watani','symbole national','national symbol'],['رهان سياسي','rihan siyasi','pari politique','political bet'],['رابطة مجتمعية','rabita mujtamaiya','lien communautaire','community bond'],['رتابة الحياة','ratabat alhayat','monotonie de vie','life monotony'],['رزق وفير','rizq wafir','subsistance abondante','abundant sustenance'],['رأفة ورحمة','ra\'fa wa rahma','compassion et miséricorde','compassion and mercy'],['رسائل إلكترونية','rasa\'il iliktruniya','e-mails','emails'],['رشاقة حركية','rashaqa harakiya','agilité motrice','motor agility'],['ردع نووي','rad nuwawi','dissuasion nucléaire','nuclear deterrence'],['رادع','radi','dissuasif','deterrent'],['رائد','raid','pionnier','pioneer'],['رائع','rawi','magnifique','magnificent'],['رحابة','rahaba','vastitude','vastness'],['رداء','ridaa','manteau','cloak'],['ريبة','rayba','doute','doubt'],['روعة','rawaa','splendeur','splendor'],['رياح التغيير','riyah altahyir','vents du changement','winds of change'],['رمز الوطن','ramz alwatan','symbole de la patrie','symbol of homeland']],
+'ز':[['زنبق','zinbaq','lis','lily'],['زرقاء','zarqaa','bleu','blue'],['زعل','zaal','colère','anger'],['زوايا','zawaya','angles','angles'],['زينة','ziyna','ornement','ornament'],['زفاف','zifaf','mariage','wedding'],['زكاة','zakat','aumône','alms'],['زيتون','zaytun','olive','olive'],['زنجبيل','zanjabil','gingembre','ginger'],['زفر','zafar','victoire','victory'],['زخرف','zakhraf','ornementation','ornamentation'],['زلفى','zulfa','proximité','closeness'],['زهد','zuhd','ascétisme','asceticism'],['زواحف','zawahif','reptiles','reptiles'],['زبالة','zibala','ordures','garbage'],['زمرد','zumurrud','émeraude','emerald'],['زرافة','zarafa','girafe','giraffe'],['زنزانة','zinzana','cellule prison','prison cell'],['زمبابوي','zimbabwi','Zimbabwe','Zimbabwe'],['زمرة','zumra','groupe','group'],['زمام','zimam','rêne','rein'],['زوبعة','zawbaa','tempête','storm'],['زيادة','ziada','augmentation','increase'],['زخم','zakhm','élan','momentum'],['زجاج','zijaj','verre','glass'],['زحام','ziham','foule','crowd'],['زركشة','zarkasha','broderie','embroidery'],['زلاجة','zalaja','luge','sled'],['زهور','zuhur','fleurs','flowers'],['زياد','ziyad','abondant','abundant'],['زيف','zayf','faux','fake'],['زيفاء','zayfaa','falsification','falsification'],['زبرجد','zabarjad','péridot','peridot'],['زريعة','zaria','semence','seed'],['زيارات','ziyarat','visites','visits'],['زراعة عضوية','ziraa udwiya','agriculture biologique','organic farming'],['زمن قديم','zaman qadim','temps ancien','ancient time'],['زواج مدني','zawaj madani','mariage civil','civil marriage'],['زعماء الدول','zuama aldual','chefs d\'État','heads of state'],['زيادة الإنتاج','ziada alintaj','augmentation production','production increase'],['زلزال عنيف','zilzal anif','tremblement violent','violent earthquake'],['زيت الزيتون','zayt alzaytun','huile d\'olive','olive oil'],['زهرة اللوتس','zahrat allutus','fleur de lotus','lotus flower'],['زمام الأمور','zimam alumur','contrôle des affaires','control of affairs'],['زبدة الفكر','zubdat alfikr','crème de la pensée','cream of thought'],['زجاج معزول','zijaj maazul','verre isolant','insulating glass'],['زحام المرور','ziham almurur','embouteillage','traffic jam'],['زهور البرية','zuhur albariya','fleurs sauvages','wild flowers'],['زلة لسان','zallat lisan','lapsus','slip of tongue'],['زيف الكلام','zayf alkalam','fausseté du discours','falseness of speech'],['زخم الشعب','zakhm alshaab','élan du peuple','people\'s momentum'],['زراعة الأسنان','ziraa alasnaan','implants dentaires','dental implants'],['زواج مبكر','zawaj mubakkir','mariage précoce','early marriage'],['زعيم المعارضة','zaim almuarada','leader de l\'opposition','opposition leader'],['زلزال سياسي','zilzal siyasi','tremblement politique','political earthquake'],['زينة البيت','ziniat albait','décoration maison','home decoration'],['زهرة الخشخاش','zahrat alkhashkhash','coquelicot','poppy'],['زيت المحرك','zayt almuharrik','huile moteur','engine oil'],['زمجرة الأسد','zamjarat alasad','rugissement lion','lion roar'],['زبرجد الأمازون','zabarjad alamazun','péridot Amazone','Amazon peridot'],['زنزانة انفرادية','zinzana infuradiya','cellule isolement','isolation cell'],['زيارة طبية','ziyara tibbiya','visite médicale','medical visit'],['زحف التصحر','zahf altasahhur','avancée désertification','desertification advance'],['زركشة إسلامية','zarkasha islamiya','broderie islamique','Islamic embroidery'],['زراعة الأرز','ziraa alarruz','culture du riz','rice cultivation'],['زمرد اللون','zumurrud allawn','couleur émeraude','emerald color'],['زفر من الأعماق','zafar min alamaaq','victoire profonde','deep victory'],['زهد وتقشف','zuhd wa taqashshuf','austérité','austerity'],['زئير الأسد','zuair alasad','rugissement de lion','roar of lion'],['زغرودة','zaghruda','youyou','ululation'],['زلة قدم','zallat qadam','faux pas','misstep'],['زلة','zalla','faux pas','slip'],['زنبقة','zinbaqah','lis','lily flower'],['زيادة السكان','ziada alsukan','croissance démographique','population growth'],['زيف وكذب','zayf wa kadhib','faux et mensonge','falsehood and lie'],['زحف عسكري','zahf askari','avancée militaire','military advance'],['زاوية النظر','zawiyat alnazar','angle de vue','perspective angle'],['زهرة الأمل','zahrat alamal','fleur d\'espoir','flower of hope'],['زمان الأجداد','zaman alajdad','temps des ancêtres','time of ancestors'],['زواج ناجح','zawaj najah','mariage réussi','successful marriage'],['زيارة رسمية','ziyara rasmiya','visite officielle','official visit'],['زرافة أفريقية','zarafa afriqiya','girafe africaine','African giraffe'],['زخرفة عربية','zakhrufa arabiya','ornement arabe','Arabic ornament'],['زراعة الزيتون','ziraat alzaytun','culture de l\'olive','olive cultivation'],['زهرة اليوم','zahrat alyawm','fleur du jour','flower of the day'],['زلزال فكري','zilzal fikri','tremblement intellectuel','intellectual earthquake'],['زعيم تاريخي','zaim tarikhiy','leader historique','historical leader'],['زكاة الفطر','zakat alfitr','aumône de fin de jeûne','alms of end of fast'],['زينة العقل','ziniat alaql','ornement de la raison','ornament of reason']],
+'س':[['سلاح','silah','arme','weapon'],['سلطة','sulta','pouvoir','power'],['سياسة','siyasa','politique','politics'],['سهرة','sahra','soirée','evening'],['سباق','sibaq','course','race'],['سفارة','sifara','ambassade','embassy'],['سجن','sajn','prison','prison'],['سحاب','sahab','nuage','cloud'],['سر','sirr','secret','secret'],['سيف','sayf','épée','sword'],['ساعد','saad','aide','help'],['سلة','salla','panier','basket'],['سؤال صعب','sual saab','question difficile','difficult question'],['سيطرة','saytara','contrôle','control'],['سكن','sakan','logement','housing'],['سلوك','suluk','comportement','behavior'],['سنة نبوية','suna nabawiya','Sunnah','Sunnah'],['سواحل','sawahil','côtes','coasts'],['سيادة','siyada','souveraineté','sovereignty'],['سامي','sami','noble','noble'],['ساقية','saqiya','canal','canal'],['سباحة','sibaha','natation','swimming'],['سبب','sabab','cause','cause'],['ستارة','sitara','rideau','curtain'],['سجادة','sajjada','tapis','carpet'],['سحر','sihr','magie','magic'],['سداد','sadad','remboursement','repayment'],['سرعة','sura','vitesse','speed'],['سطح','sath','surface','surface'],['سعر','sir','prix','price'],['سفينة','safina','navire','ship'],['سقف','saqf','plafond','ceiling'],['سكة','sikka','rail','rail'],['سلاسل','salasil','chaînes','chains'],['سلبية','salbiya','négativité','negativity'],['سمعة','suma','réputation','reputation'],['سنجاب','sinjab','écureuil','squirrel'],['سهم','sahm','flèche','arrow'],['سوق','suq','marché','market'],['سهولة','suhula','facilité','ease'],['سهل','sahl','facile','easy'],['سحلية','sihliya','lézard','lizard'],['سخرية','sukhiriya','sarcasme','sarcasm'],['سداسي','sudasi','hexagonal','hexagonal'],['سربلة','sarbala','mauvaise gestion','mismanagement'],['سرقة','sariqa','vol','theft'],['سطوة','satwa','autorité','authority'],['سعف','saaf','palme','palm frond'],['سقوط','suqut','chute','fall'],['سكون','sukun','calme','calm'],['سلامة','salama','sécurité','safety'],['سمفونية','simfuniya','symphonie','symphony'],['سياحة','siyaha','tourisme','tourism'],['سيرة ذاتية','sira dhatiya','CV','CV/resume'],['سينما','sinima','cinéma','cinema'],['سعادة حقيقية','saada haqiqiya','bonheur véritable','true happiness'],['سلام دائم','salam da\'im','paix permanente','permanent peace'],['سياسة خارجية','siyasa kharijiya','politique étrangère','foreign policy'],['سرعة الضوء','surat aldaw','vitesse de la lumière','speed of light'],['سقوط الأمطار','suqut alamtar','chutes de pluie','rainfall'],['سلوك اجتماعي','suluk ijtimaii','comportement social','social behavior'],['سمعة حسنة','suma hasana','bonne réputation','good reputation'],['سياحة دينية','siyaha diniya','tourisme religieux','religious tourism'],['سكن اجتماعي','sakan ijtimaii','logement social','social housing'],['سفينة حربية','safina harbiya','navire de guerre','warship'],['سيارة كهربائية','sayyara kahraba','voiture électrique','electric car'],['سجن احتياطي','sajn ihtiyati','détention provisoire','pre-trial detention'],['سعر صرف','sir sarf','taux de change','exchange rate'],['سياسة اقتصادية','siyasa iqtisadiya','politique économique','economic policy'],['سلاح نووي','silah nuwawi','arme nucléaire','nuclear weapon'],['ساعة ذكية','saaa dhakiya','montre intelligente','smartwatch'],['سيارة أجرة','sayyara ujra','taxi','taxi'],['سباق الخيول','sibaq alkhuyyul','course de chevaux','horse race'],['سباحة حرة','sibaha hurra','nage libre','free swimming'],['سينما العرب','sinima alarab','cinéma arabe','Arab cinema'],['سماء زرقاء','sama zarqaa','ciel bleu','blue sky'],['سلام العالم','salam alalm','paix mondiale','world peace'],['سرد القصص','sard alqisas','narration','storytelling'],['سرور','surur','joie','joy'],['سقيفة','saqifa','auvent','canopy'],['سلاسة','salasa','fluidité','fluidity'],['سلوكيات','slukiyat','comportements','behaviors'],['سمو','sumuw','élévation','elevation'],['سنابل','sanaabil','épis','ears of wheat'],['سهوب','sahub','steppes','steppes'],['سياحة مستدامة','siyaha mustadama','tourisme durable','sustainable tourism'],['سيادة الشعب','siyada alshaab','souveraineté du peuple','sovereignty of people'],['سلام مجتمعي','salam mujtamii','paix communautaire','community peace'],['سرعة الإنترنت','surat alinternet','vitesse internet','internet speed']],
+'ش':[['شجاعة','shajaa','courage','courage'],['شراب','sharab','boisson','drink'],['شيخ','shaykh','cheikh','sheikh'],['شمال','shamal','nord','north'],['شتاء','shita','hiver','winter'],['شخصية','shakhsiya','personnalité','personality'],['شرف','sharaf','honneur','honor'],['شوق','shawq','désir','longing'],['شهادة','shahada','témoignage','testimony'],['شريك','sharik','partenaire','partner'],['شاشة','shasha','écran','screen'],['شبكة','shabaka','réseau','network'],['شرط','shart','condition','condition'],['شعور','shuuur','sentiment','feeling'],['شقيق','shaqiq','frère','sibling'],['شكل','shakl','forme','form'],['شمع','sham','bougie','candle'],['شنطة','shanta','sac','bag'],['شهية','shahiya','appétit','appetite'],['شيطان','shaytan','diable','devil'],['شاطئ','shati','plage','beach'],['شاحنة','shahina','camion','truck'],['شبل','shibl','lionceau','lion cub'],['شجرة نخيل','shajarat nakhil','palmier','palm tree'],['شخص','shakhs','personne','person'],['شدة','shidda','intensité','intensity'],['شراكة','shiraka','partenariat','partnership'],['شروق','shurooq','lever du soleil','sunrise'],['شعلة','shula','flamme','flame'],['شقاء','shiqa','misère','misery'],['شكوى','shakwa','plainte','complaint'],['شمول','shumul','inclusion','inclusion'],['شهامة','shahama','générosité','generosity'],['شاعر','shaïr','poète','poet'],['شاهد عادل','shahid adil','témoin juste','just witness'],['شبكة اجتماعية','shabaka ijtimaia','réseau social','social network'],['شركة عملاقة','sharika imllaqa','méga entreprise','mega company'],['شعر عربي','shir arabi','poésie arabe','Arabic poetry'],['شتاء قارس','shita qaris','hiver rigoureux','harsh winter'],['شجرة التفاح','shajarat altufah','pommier','apple tree'],['شمس الحقيقة','shams alhaqiqa','soleil de la vérité','sun of truth'],['شباب العالم','shabab alalm','jeunesse mondiale','world youth'],['شركة متعددة','sharika mutaadida','multinationale','multinational'],['شعر التحرر','shir altaharur','poésie de liberté','liberation poetry'],['شريان الحياة','shiryan alhayat','artère de vie','artery of life'],['شيخوخة مبكرة','shaikhukha mubakkira','vieillissement précoce','early aging'],['شاطئ أبيض','shati abyad','plage blanche','white beach'],['شخصية قيادية','shakhsiya qiyadiya','personnalité de leadership','leadership personality'],['شبكة الإنترنت','shabakat alinternet','réseau internet','internet network'],['شجاعة الحق','shajaat alhaqq','courage de la vérité','courage of truth'],['شعور بالانتماء','shuuur bil-intimaa','sentiment d\'appartenance','sense of belonging'],['شاشة لمس','shasha lams','écran tactile','touch screen'],['شركة ناشئة','sharika nashia','startup','startup'],['شهادة تقديرية','shahada taqdiriya','certificat d\'appréciation','appreciation certificate'],['شروق الفجر','shurooq alfajr','lever de l\'aube','dawn rising'],['شريط مغناطيسي','sharit maghnatis','bande magnétique','magnetic tape'],['شمال أفريقيا','shamal afrqiya','Afrique du Nord','North Africa'],['شوارع المدينة','shawari almadina','rues de la ville','city streets'],['شعوب العالم','shuub alalm','peuples du monde','peoples of world'],['شراكة دولية','shiraka dawliya','partenariat international','international partnership'],['شاهد عيان','shahid ayan','témoin oculaire','eyewitness'],['شعر الرومانسية','shir alrumansiya','poésie romantique','romantic poetry'],['شيخ الإسلام','shaykh alislam','cheikh de l\'Islam','Sheikh of Islam'],['شحن كهربائي','shahn kahrabai','charge électrique','electrical charge'],['شبكة كهربائية','shabaka kahraba','réseau électrique','electrical network'],['شهادة جامعية','shahada jamiiya','diplôme universitaire','university degree'],['شاحنة ثقيلة','shahina thaqila','poids lourd','heavy truck'],['شريعة إسلامية','sharia islamiya','loi islamique','Islamic law'],['شفافية إدارية','shafafiya idariya','transparence administrative','administrative transparency'],['شكوى رسمية','shakwa rasmiya','plainte officielle','official complaint'],['شبكة المياه','shabakat almiyah','réseau d\'eau','water network'],['شعور بالأمان','shuuur bilaman','sentiment de sécurité','feeling of security'],['شعلة الأمل','shulat alamal','flamme d\'espoir','flame of hope'],['شهر العسل','shahr alasal','lune de miel','honeymoon'],['شرارة الثورة','shararat althawra','étincelle de révolution','spark of revolution'],['شعاع النور','shuaa alnur','rayon de lumière','ray of light'],['شفق الغروب','shafaq alghrub','crépuscule du coucher','sunset twilight'],['شوارع آمنة','shawari amina','rues sûres','safe streets'],['شباب واعد','shabab waid','jeunesse prometteuse','promising youth'],['شعلة الحرية','shulat alhurriya','flamme de liberté','flame of freedom'],['شهامة وكرم','shahama wa karam','générosité et noblesse','generosity and nobility'],['شمول اجتماعي','shumul ijtimaii','inclusion sociale','social inclusion'],['شريعة عادلة','sharia adila','loi juste','just law'],['شجرة المعرفة','shajarat almaarifa','arbre de la connaissance','tree of knowledge'],['شبكة الأمان','shabakat alaman','filet de sécurité','safety net'],['شوق للوطن','shawq lilwatan','nostalgie de la patrie','longing for homeland'],['شمعة الأمل','shamat alamal','bougie d\'espoir','candle of hope'],['شعب موحد','shaab muwahhad','peuple uni','united people'],['شراكة حقيقية','shiraka haqiqiya','véritable partenariat','true partnership'],['شهادة الحق','shahada alhaqq','témoignage de vérité','testimony of truth']],
+'ص':[['صحراء','sahraa','désert','desert'],['صدى','sada','écho','echo'],['صخرة','sakhra','rocher','rock'],['صراع','siraa','conflit','conflict'],['صغير','saghir','petit','small'],['صفاء','safa','pureté','purity'],['صعود','suud','montée','ascent'],['صمت','samt','silence','silence'],['صباح','sabah','matin','morning'],['صلح','sulh','réconciliation','peace'],['صفر','sifr','zéro','zero'],['صحفي','sahafi','journaliste','journalist'],['صدمة','sadma','choc','shock'],['صرف','sarf','dépense','spending'],['صعوبة','suuba','difficulté','difficulty'],['صفقة','safqa','accord','deal'],['صلابة','salaba','dureté','hardness'],['صمود','sumud','résistance','resistance'],['صناعة تحويلية','sinaa tahwiliya','industrie manufacturière','manufacturing industry'],['صوت عالٍ','sawt alin','voix haute','loud voice'],['صورة فوتوغرافية','sura futugrafiya','photographie','photograph'],['صفحة ويب','safha wayb','page web','web page'],['صحة نفسية','siha nafsiya','santé mentale','mental health'],['صبر جميل','sabr jamil','belle patience','beautiful patience'],['صديق وفي','sadiq wafi','ami fidèle','faithful friend'],['صدق الحديث','sidq alhadith','sincérité du discours','sincerity of speech'],['صحة الجسم','siha aljism','santé physique','physical health'],['صلاة الفجر','salat alfajr','prière de l\'aube','dawn prayer'],['صناعة الذكاء','sinaat aldhakaa','industrie de l\'IA','AI industry'],['صوت الشعب','sawt alshaab','voix du peuple','voice of people'],['صراع الحضارات','siraa alhadarat','choc des civilisations','clash of civilizations'],['صدمة ثقافية','sadma thaqafiya','choc culturel','cultural shock'],['صمود البطل','sumud albatal','résistance du héros','hero\'s resistance'],['صفقة تجارية','safqa tijariya','accord commercial','trade deal'],['صعوبة التعلم','suubat altaalum','difficulté d\'apprentissage','learning difficulty'],['صحافة مستقلة','sahafa mustaqila','presse indépendante','independent press'],['صلابة الموقف','salabat almawqif','fermeté de position','firmness of position'],['صحراء الصمت','sahraa alsamt','désert du silence','desert of silence'],['صفاء الروح','safa alruh','pureté de l\'âme','purity of soul'],['صوت الطبيعة','sawt altabia','voix de la nature','voice of nature'],['صمت الليل','samt allayl','silence de la nuit','silence of night'],['صباح الأمل','sabah alamal','matin d\'espoir','morning of hope'],['صبر على البلاء','sabr ala albala','patience dans l\'épreuve','patience in trial'],['صديق في الشدة','sadiq fi alshidda','ami dans l\'adversité','friend in adversity'],['صدق الوعد','sidq alwad','sincérité de la promesse','sincerity of promise'],['صحة عامة','siha amma','santé publique','public health'],['صورة المجتمع','surat almujjtama','image de la société','image of society'],['صفحة التاريخ','safha altarikh','page de l\'histoire','page of history'],['صناعة الدفاع','sinaat aldifaa','industrie de défense','defense industry'],['صحراء الحياة','sahraa alhayat','désert de la vie','desert of life'],['صراع الهوية','siraa alhuwiya','crise d\'identité','identity crisis'],['صمود الشعوب','sumud alshuub','résistance des peuples','peoples\' resistance'],['صفقة السلاح','safqat alsilah','vente d\'armes','arms deal'],['صوت الحرية','sawt alhurriya','voix de la liberté','voice of freedom'],['صبر الأنبياء','sabr alanabiyaa','patience des prophètes','prophets\' patience'],['صدق النية','sidq alniya','sincérité de l\'intention','sincerity of intention'],['صحة البيئة','sihat albia','santé environnementale','environmental health'],['صناعة الترفيه','sinaat altrafiih','industrie du divertissement','entertainment industry'],['صراع الأجيال','siraa alajyal','conflit des générations','generational conflict'],['صمت الحكيم','samt alhakeem','silence du sage','sage\'s silence'],['صلاة الجماعة','salat aljamaa','prière collective','collective prayer'],['صفاء الضمير','safa aldamir','pureté de conscience','purity of conscience'],['صعوبات الحياة','suubat alhayat','difficultés de la vie','life difficulties'],['صوت الأذان','sawt aladhan','voix de l\'appel à la prière','call to prayer'],['صورة النجاح','surat alnajah','image du succès','image of success'],['صحراء النفس','sahraa alnafs','désert de l\'âme','desert of soul'],['صوت الحق','sawt alhaqq','voix de la vérité','voice of truth'],['صراع مسلح','siraa musalah','conflit armé','armed conflict'],['صمود أمام الأزمة','sumud alam alazma','résistance face à la crise','resistance to crisis'],['صفقة تاريخية','safqa tarikhiya','accord historique','historical deal'],['صعوبات التغيير','suubat altaghyir','difficultés du changement','difficulties of change'],['صحافة نزيهة','sahafa nazija','presse honnête','honest press']],
+'ض':[['ضرب','darb','frappe','strike'],['ضرر','darar','dommage','damage'],['ضلال','dalal','égarement','misguidance'],['ضيق','dayq','étroit','narrow'],['ضباب','dabbab','brouillard','fog'],['ضخم','dakhm','énorme','huge'],['ضوضاء','dawdaa','bruit','noise'],['ضال','dal','égaré','lost'],['ضمادة','dimada','bandage','bandage'],['ضرائب','daraib','impôts','taxes'],['ضابط','dabit','officier','officer'],['ضاحية','dahiya','banlieue','suburb'],['ضالة','dalla','animal perdu','lost animal'],['ضامن','damin','garant','guarantor'],['ضحكة','dahka','rire','laugh'],['ضخامة','dakhama','grandeur','grandeur'],['ضربة','darba','coup','blow'],['ضرغام','durgham','lion','lion'],['ضعيف','daif','faible','weak'],['ضمأ','dama','soif','thirst'],['ضوابط','dawabita','contrôles','controls'],['ضياع','diyaa','perte','loss'],['ضمانات','damanat','garanties','guarantees'],['ضوء الشمس','daw alshams','lumière solaire','sunlight'],['ضمير المجتمع','damir almujjtama','conscience sociale','social conscience'],['ضرورة حتمية','darura hatmiya','nécessité absolue','absolute necessity'],['ضيف الكريم','dayf alkarim','hôte généreux','generous guest'],['ضحك صادق','dahak sadiq','rire sincère','sincere laughter'],['ضغط الدم','daght alddam','pression artérielle','blood pressure'],['ضحية الظلم','dahiyat alzulm','victime d\'injustice','victim of injustice'],['ضعف البصر','daif albasar','faiblesse visuelle','visual weakness'],['ضمان الجودة','daman aljawda','assurance qualité','quality assurance'],['ضريبة الدخل','daribat aldakhl','impôt sur revenu','income tax'],['ضابط شرطة','dabit shurta','officier de police','police officer'],['ضاحية هادئة','dahiya hadia','banlieue tranquille','quiet suburb'],['ضوابط قانونية','dawabita qanuniya','contrôles légaux','legal controls'],['ضمانات دستورية','damanat dusturiya','garanties constitutionnelles','constitutional guarantees'],['ضجيج المدينة','dajij almadina','bruit de la ville','city noise'],['ضغط اجتماعي','daght ijtimaii','pression sociale','social pressure'],['ضرر بيئي','darar bii','dommage environnemental','environmental damage'],['ضياع الوقت','diyaa alwaqt','perte de temps','waste of time'],['ضعف الإرادة','daif alirada','faiblesse de volonté','weakness of will'],['ضخامة الكون','dakhama alkawn','grandeur de l\'univers','grandeur of universe'],['ضلال الفكر','dalal alfikr','égarement de la pensée','misguidance of thought'],['ضحكة الطفل','dahkat altifl','rire de l\'enfant','child\'s laugh'],['ضوء القمر','daw alqamar','lumière de la lune','moonlight'],['ضغوط العمل','dugut alamal','pressions de travail','work pressures'],['ضرورة التغيير','darurat altaghyir','nécessité de changement','necessity of change'],['ضمير حي','damir hay','conscience vive','live conscience'],['ضباب الصباح','dabbab alsabah','brouillard matinal','morning fog'],['ضعف القوي','daif alqawi','faiblesse du fort','weakness of the strong'],['ضمان حقوق','daman huquq','garantie de droits','guarantee of rights'],['ضياع الأمل','diyaa alamal','perte d\'espoir','loss of hope'],['ضرب المثل','darb almathal','proverbe','proverb'],['ضاحكة ومبتسمة','dahika wa mubtasima','riant et souriant','laughing and smiling'],['ضوء الحقيقة','daw alhaqiqa','lumière de la vérité','light of truth'],['ضغط النفسي','daght alnafsi','pression psychologique','psychological pressure'],['ضرورة التعاون','darurat altawun','nécessité de coopération','necessity of cooperation'],['ضحية العنف','dahiyat alunf','victime de violence','victim of violence'],['ضعف الثقة','daif althiqa','manque de confiance','lack of confidence'],['ضمانة مستقبل','damanat mustaqbal','garantie d\'avenir','guarantee of future'],['ضوء البصيرة','daw albasira','lumière de perspicacité','light of insight'],['ضغط الإعلام','daght alilam','pression médiatique','media pressure'],['ضرورة الحوار','darurat alhiwar','nécessité du dialogue','necessity of dialogue'],['ضحية الاستغلال','dahiyat alistighlal','victime d\'exploitation','exploitation victim'],['ضعف الذاكرة','daif aldhakira','faiblesse de mémoire','memory weakness'],['ضمانة اجتماعية','damana ijtimaia','garantie sociale','social guarantee'],['ضوء الهداية','daw alhidaya','lumière de la guidance','light of guidance'],['ضغط الأقران','daght alaqran','pression des pairs','peer pressure'],['ضرورة الإصلاح','darurat alislah','nécessité de réforme','necessity of reform'],['ضحكات الأطفال','dahikat alatifall','rires des enfants','children\'s laughter'],['ضوء اليقين','daw alyaqin','lumière de la certitude','light of certainty'],['ضعيف الإرادة','daif alirada','faible de volonté','weak-willed']],
+'ط':[['طلب','talab','demande','request'],['طاقة','taqa','énergie','energy'],['طول','tul','longueur','length'],['طوفان','tufan','inondation','flood'],['طهارة','tahara','pureté','purity'],['طمأنينة','tumainina','tranquillité','tranquility'],['طوق','tawq','collier','necklace'],['طين','tin','argile','clay'],['طريدة','tarida','proie','prey'],['طائفة','taifa','groupe','group'],['طالب','talib','étudiant','student'],['طاهر','tahir','pur','pure'],['طاغية','taghiya','tyran','tyrant'],['طائل','tail','valeur','value'],['طافح','tafih','débordant','overflowing'],['طاقم','taqm','équipage','crew'],['طبل','tabl','tambour','drum'],['طحلب','tahlab','algue','algae'],['طرد','tard','expulsion','expulsion'],['طريفة','tarifa','drôle','funny'],['طقس','taqs','rituel','ritual'],['طمع','tama','avidité','greed'],['طهو','tahu','cuisson','cooking'],['طور','tawwar','développement','development'],['طيبة','tayba','bonté','goodness'],['طيف','tayf','spectre','spectrum'],['طاقة شمسية','taqa shamsiya','énergie solaire','solar energy'],['طاقة متجددة','taqa mutajaddida','énergie renouvelable','renewable energy'],['طائرة حربية','taira harbiya','avion de guerre','fighter jet'],['طبيب نفسي','tabib nafsi','psychiatre','psychiatrist'],['طفل النجوم','tifl alnujum','enfant des étoiles','child of stars'],['طموح كبير','tumuh kabir','grande ambition','great ambition'],['طريق الحرير','tariq alharlr','route de la soie','silk road'],['طبيعة خلابة','tabiya khallaba','nature magnifique','magnificent nature'],['طيران مدني','tayaran madani','aviation civile','civil aviation'],['طاقة نووية','taqa nuwawiya','énergie nucléaire','nuclear energy'],['طب الأسنان','tibb alasnaan','dentisterie','dentistry'],['طب الأطفال','tibb alatifall','pédiatrie','pediatrics'],['طب الطوارئ','tibb altawari','médecine d\'urgence','emergency medicine'],['طقس الصحراء','taqs alsahraa','climat désertique','desert climate'],['طول القامة','tul alqama','grande taille','tall height'],['طفرة تقنية','tafra taqniya','saut technologique','technology leap'],['طموح سياسي','tumuh siyasi','ambition politique','political ambition'],['طب الفضاء','tibb alfadaa','médecine spatiale','space medicine'],['طاقة الرياح','taqa alriyah','énergie éolienne','wind energy'],['طائرة مسيرة','taira musayyara','drone','drone'],['طب وقائي','tibb wiqa\'i','médecine préventive','preventive medicine'],['طريق سريع','tariq sari','autoroute','highway'],['طبل الحرب','tabl alharb','tambour de guerre','war drum'],['طموح المرأة','tumuh almara','ambition de la femme','women\'s ambition'],['طفل موهوب','tifl mawhub','enfant doué','gifted child'],['طبيعة الإنسان','tabiat alinsan','nature humaine','human nature'],['طهو المطبخ العربي','tahu almatabikh alarabi','cuisine arabe','Arab cooking'],['طائر الفينيق','tair alfunuq','phénix','phoenix'],['طيف الألوان','tayf alwaan','spectre des couleurs','color spectrum'],['طبيب قلب','tabib qalb','cardiologue','cardiologist'],['طموح التغيير','tumuh altaghyir','ambition de changement','ambition of change'],['طاقة الأجداد','taqa alajdad','énergie des ancêtres','energy of ancestors'],['طريق النجاح','tariq alnajah','chemin du succès','path to success'],['طعام صحي','taam sihi','nourriture saine','healthy food'],['طقس ممطر','taqs mumtir','temps pluvieux','rainy weather'],['طفل يتيم','tifl yatim','enfant orphelin','orphan child'],['طبيب بيطري','tabib baytari','vétérinaire','veterinarian'],['طريق الحق','tariq alhaqq','chemin de la vérité','path of truth'],['طاقة الحب','taqa alhubb','énergie de l\'amour','energy of love'],['طموح الأمة','tumuh alamna','ambition de la nation','ambition of the nation'],['طب الأمراض','tibb alamrad','pathologie','pathology'],['طيران الأحلام','tayaran alahlam','vol des rêves','flight of dreams'],['طبيعة الكون','tabiyat alkawn','nature de l\'univers','nature of universe'],['طهارة القلب','taharat alqalb','pureté du cœur','purity of heart'],['طموح بلا حدود','tumuh bila hudud','ambition sans limites','ambition without limits'],['طريق التنمية','tariq altanmiya','voie du développement','path of development'],['طفولة سعيدة','tufula saida','enfance heureuse','happy childhood'],['طاقة الإبداع','taqa alibda','énergie créative','creative energy'],['طب الجراحة','tibb aljiraha','chirurgie','surgery'],['طبيب الأسنان','tabib alasnaan','dentiste','dentist'],['طريق المعرفة','tariq almaarifa','chemin de la connaissance','path of knowledge'],['طموح الإنسان','tumuh alinsan','ambition humaine','human ambition'],['طاقة الأمل','taqa alamal','énergie de l\'espoir','energy of hope'],['طائر الحرية','tair alhurriya','oiseau de la liberté','bird of freedom'],['طفولة بريئة','tufula baria','enfance innocente','innocent childhood'],['طعام الروح','taam alruh','nourriture de l\'âme','food of soul'],['طريق الحكمة','tariq alhikma','chemin de la sagesse','path of wisdom'],['طبيعة الإبداع','tabiat alibda','nature de la créativité','nature of creativity'],['طاقة الشباب','taqa alshabab','énergie de la jeunesse','energy of youth'],['طموح لا ينطفئ','tumuh la yantafi','ambition indéfectible','inextinguishable ambition'],['طريق الإصلاح','tariq alislah','voie de la réforme','path of reform'],['طيور الجنة','tuyur aljanna','oiseaux du paradis','birds of paradise']],
+'ظ':[['ظلمات','zhulmat','ténèbres','darkness'],['ظبي','zhabi','gazelle','gazelle'],['ظاهر','zhahir','apparent','apparent'],['ظليل','zhalil','ombragé','shady'],['ظرف','zhurf','enveloppe','envelope'],['ظعن','zhaun','voyage','journey'],['ظلوم','zhalum','injuste','unjust'],['ظفيرة','zhafira','tresse','braid'],['ظنون','zhunun','doutes','doubts'],['ظمأ','zhama','soif','thirst'],['ظلم اجتماعي','zhulm ijtimaii','injustice sociale','social injustice'],['ظهور الفجر','zhuhur alfajr','apparition de l\'aube','dawn appearance'],['ظروف صعبة','zhuruf saaba','circonstances difficiles','difficult circumstances'],['ظاهرة علمية','zhahira ilmiya','phénomène scientifique','scientific phenomenon'],['ظل الليل','zhil allayl','ombre de la nuit','shadow of night'],['ظهر الجمل','zhahr aljamal','dos du chameau','camel\'s back'],['ظريف وذكي','zharif wa dhaki','élégant et intelligent','elegant and intelligent'],['ظلم بلا حدود','zhulm bila hudud','injustice sans limites','injustice without limits'],['ظاهرة اجتماعية','zhahira ijtimaia','phénomène social','social phenomenon'],['ظروف المعيشة','zhuruf almaisha','conditions de vie','living conditions'],['ظهور التقنية','zhuhur altaqniya','émergence de technologie','emergence of technology'],['ظل الشجرة','zhil alshajara','ombre de l\'arbre','tree shadow'],['ظلم الفقراء','zhulm alfuqara','injustice envers les pauvres','injustice to poor'],['ظن خاطئ','zhann khai','fausse supposition','false assumption'],['ظفر بالنصر','zhafar binnnasr','remporter la victoire','win the victory'],['ظلام الجهل','zhulam aljahal','obscurité de l\'ignorance','darkness of ignorance'],['ظهر الحقيقة','zhahr alhaqiqa','révéler la vérité','reveal the truth'],['ظريف الحديث','zharif alhadith','élégance de la parole','elegance of speech'],['ظلمة النفق','zhulma alnanfaq','obscurité du tunnel','tunnel darkness'],['ظمأ المعرفة','zhama almaarifa','soif de connaissance','thirst for knowledge'],['ظاهرة الإرهاب','zhahira alirrhab','phénomène du terrorisme','terrorism phenomenon'],['ظروف الحرب','zhuruf alharb','conditions de guerre','war conditions'],['ظهور القمر','zhuhur alqamar','apparition de la lune','moon appearance'],['ظل الماضي','zhil almadi','ombre du passé','shadow of the past'],['ظلم الاستعمار','zhulm alisti\'mar','injustice du colonialisme','injustice of colonialism'],['ظاهرة الفساد','zhahira alfasad','phénomène de corruption','corruption phenomenon'],['ظروف النمو','zhuruf alnumuw','conditions de croissance','growth conditions'],['ظبي الصحراء','zhabi alsahraa','gazelle du désert','desert gazelle'],['ظلوم الدهر','zhulum aldahr','injustice du temps','injustice of time'],['ظن الخير','zhann alkhyr','penser du bien','think good'],['ظفر بالمطلوب','zhafar bilmatlub','obtenir ce qu\'on cherche','obtain what\'s sought'],['ظلام الليل','zhulam allayl','obscurité de la nuit','night darkness'],['ظهر جديد','zhahr jadid','nouvelle apparition','new appearance'],['ظروف استثنائية','zhuruf istithna\'iya','circonstances exceptionnelles','exceptional circumstances'],['ظاهرة المناخ','zhahira almunakh','phénomène climatique','climatic phenomenon'],['ظلم ذوي القربى','zhulm dhawi alqurba','injustice des proches','injustice of close ones'],['ظرف الأزمة','zhurf alazma','conjoncture de la crise','crisis conjuncture'],['ظاهرة التطرف','zhahira altataruf','phénomène d\'extrémisme','extremism phenomenon'],['ظلمة الجهل','zhulma aljahal','obscurité de l\'ignorance','darkness of ignorance'],['ظمأ الروح','zhama alruh','soif de l\'âme','thirst of soul'],['ظهور القرآن','zhuhur alquran','révélation du Coran','revelation of Quran'],['ظاهرة القيادة','zhahira alqiyada','phénomène du leadership','leadership phenomenon'],['ظروف قاسية','zhuruf qasiya','conditions dures','harsh conditions'],['ظل الله','zhil allah','ombre de Dieu','shade of God'],['ظلمة الفتنة','zhulma alfitnah','obscurité du trouble','darkness of strife'],['ظن السوء','zhann alsu','mauvaise supposition','bad assumption'],['ظفر بالأهداف','zhafar bilahdaf','atteindre les objectifs','achieve the goals'],['ظلام الاستبداد','zhulam alistibdad','obscurité du despotisme','darkness of despotism'],['ظهر الحقائق','zhahr alhaqaiq','révélation des faits','revelation of facts'],['ظريف ومهذب','zharif wa muhadhdhab','élégant et poli','elegant and polite'],['ظلمة النفس','zhulma alnafs','obscurité de l\'âme','darkness of soul'],['ظمأ الحرية','zhama alhurriya','soif de liberté','thirst for freedom'],['ظاهرة الهجرة','zhahira alhijra','phénomène de migration','migration phenomenon'],['ظروف الطوارئ','zhuruf altawari','circonstances d\'urgence','emergency circumstances'],['ظهور الحضارة','zhuhur alhadara','émergence de civilisation','emergence of civilization'],['ظل الإيمان','zhil aliman','ombre de la foi','shadow of faith'],['ظلم التاريخ','zhulm altarikh','injustice de l\'histoire','injustice of history'],['ظاهرة العنف','zhahira alunf','phénomène de violence','violence phenomenon'],['ظروف التنمية','zhuruf altanmiya','conditions de développement','development conditions'],['ظهور البطل','zhuhur albatal','apparition du héros','appearance of hero'],['ظمأ للمعرفة','zhama lilmaarifa','soif de savoir','thirst for knowledge'],['ظلمة الطريق','zhulma altariq','obscurité du chemin','darkness of path'],['ظن الإنسان','zhann alinsan','supposition humaine','human assumption'],['ظاهرة الفقر','zhahira alfaqr','phénomène de pauvreté','poverty phenomenon'],['ظروف العمل','zhuruf alamal','conditions de travail','work conditions'],['ظهور النور','zhuhur alnur','apparition de la lumière','appearance of light'],['ظل الأنبياء','zhil alanabiyaa','ombre des prophètes','shadow of prophets']],
+'ع':[['عروس','arus','mariée','bride'],['عطلة','utla','vacances','vacation'],['عيد','id','fête','celebration'],['عناية','inaya','soin','care'],['عولمة','awlama','mondialisation','globalization'],['علاقة','alaqa','relation','relation'],['عقيدة','aqida','croyance','belief'],['عمر','umr','âge','age'],['عنوان','unwan','adresse','address'],['عود','ud','oud','oud'],['عرب','arab','Arabes','Arabs'],['عرفان','irfan','gratitude','gratitude'],['عزيمة','azima','détermination','determination'],['عمارة','imara','architecture','architecture'],['عمق','umq','profondeur','depth'],['عناد','inad','entêtement','stubbornness'],['عبادة','ibada','adoration','worship'],['عبرة','ibra','leçon','lesson'],['عبقري','abqari','génie','genius'],['عتاد','itad','équipement','equipment'],['عجب','ajab','étonnement','astonishment'],['عجلة','ajala','roue','wheel'],['عداء','adaa','hostilité','hostility'],['عدد','adad','nombre','number'],['عذاب','adhab','souffrance','suffering'],['عرض','ard','présentation','presentation'],['عروق','uroq','veines','veins'],['عزلة','uzla','isolement','isolation'],['عسكر','askar','armée','army'],['عطف','atf','affection','affection'],['عفو','afw','pardon','pardon'],['عقاب','iqab','punition','punishment'],['عقبة','aqaba','obstacle','obstacle'],['علاج','ilaj','traitement','treatment'],['علم النفس','ilm alnafs','psychologie','psychology'],['علم الاجتماع','ilm alijtimaa','sociologie','sociology'],['علم الاقتصاد','ilm aliqtisad','économie','economics'],['علوم','ulum','sciences','sciences'],['عمل فريق','amal fariq','travail d\'équipe','teamwork'],['عمل خيري','amal khayri','œuvre caritative','charitable work'],['عملة','umla','monnaie','currency'],['عملية','amaliya','opération','operation'],['عناصر','anasir','éléments','elements'],['عهد جديد','ahd jadid','nouvelle ère','new era'],['عوامل','awamil','facteurs','factors'],['عيادة','iyada','clinique','clinic'],['عيون','uyun','yeux','eyes'],['عيون الحقيقة','uyun alhaqiqa','yeux de la vérité','eyes of truth'],['عقل جمعي','aql jamai','intelligence collective','collective intelligence'],['عدالة اجتماعية','adala ijtimaia','justice sociale','social justice'],['علاقات دولية','alaqat dawliya','relations internationales','international relations'],['عولمة اقتصادية','awlama iqtisadiya','mondialisation économique','economic globalization'],['عمارة إسلامية','imara islamiya','architecture islamique','Islamic architecture'],['عبقرية إنسانية','abqariya insaniya','génie humain','human genius'],['عدالة التوزيع','adalet altawzi','équité distributive','distributive justice'],['علم الفلك','ilm alfalak','astronomie','astronomy'],['علم الأحياء','ilm alahya','biologie','biology'],['علم الجيولوجيا','ilm aljiyulujiya','géologie','geology'],['علم الكيمياء','ilm alkimiya','chimie','chemistry'],['علم الفيزياء','ilm alfizia','physique','physics'],['عمران المدن','umran almudun','urbanisme','urbanism'],['عقل الآلة','aql alala','intelligence machine','machine intelligence'],['عدالة المظالم','adalt almazalim','justice des griefs','justice of grievances'],['علاقة سببية','alaqa sababiya','relation causale','causal relation'],['عناية إلهية','inaya ilahiya','providence divine','divine providence'],['عهد الازدهار','ahd alizdihaar','ère de prospérité','era of prosperity'],['عزيمة لا تلين','azima la talin','détermination inflexible','unwavering determination'],['عيد الفطر','id alfitr','Aïd el-Fitr','Eid al-Fitr'],['عيد الأضحى','id alaadha','Aïd el-Adha','Eid al-Adha'],['عيد الميلاد','id almiilad','anniversaire','birthday'],['عقد اجتماعي','aqd ijtimaii','contrat social','social contract'],['علم الأعصاب','ilm alasaab','neurosciences','neuroscience'],['عصر الذكاء','asr aldhakaa','ère de l\'IA','AI era'],['عصر التقنية','asr altaqniya','ère technologique','technological era'],['عصر المعلومات','asr almaalumat','ère de l\'information','information era'],['علاقة تكاملية','alaqa takamulia','relation complémentaire','complementary relation'],['عناصر النجاح','anasir alnajah','éléments du succès','elements of success'],['عمارة المستقبل','imarat almustaqbal','architecture du futur','future architecture'],['علم الفضاء','ilm alfadaa','science spatiale','space science'],['عزيمة قوية','azima qawiya','forte détermination','strong determination'],['عيد الحب','id alhubb','fête de l\'amour','day of love'],['عقل منفتح','aql munfatih','esprit ouvert','open mind'],['علاقات إنسانية','alaqat insaniya','relations humaines','human relations'],['عولمة إيجابية','awlama ijabiya','mondialisation positive','positive globalization'],['عمارة مستدامة','imara mustadama','architecture durable','sustainable architecture'],['عبقرية فذة','abqariya fadhdha','génie exceptionnel','exceptional genius']],
+'غ':[['غلاء','ghala','cherté','expensive'],['غيرة','ghayra','jalousie','jealousy'],['غفران','ghufran','pardon','forgiveness'],['غزو','ghazw','invasion','invasion'],['غرام','gharam','amour','love'],['غلبة','ghalba','victoire','victory'],['غموض','ghumud','ambiguïté','ambiguity'],['غوث','ghawth','secours','help'],['غياب','ghiyab','absence','absence'],['غنم','ghanam','moutons','sheep'],['غبار','ghubar','poussière','dust'],['غبي','ghabi','stupide','stupid'],['غدر','ghadr','trahison','treachery'],['غذاء صحي','ghidha sihi','alimentation saine','healthy food'],['غابة استوائية','ghaba istiwaiiya','forêt tropicale','tropical forest'],['غضب عارم','ghadab aarim','colère intense','intense anger'],['غيمة سوداء','ghayma sawda','nuage noir','black cloud'],['غناء شعبي','ghina shaabi','chant populaire','folk singing'],['غرفة النوم','ghurfat alnawm','chambre à coucher','bedroom'],['غرفة المعيشة','ghurfat almaisha','salon','living room'],['غاز طبيعي','ghaz tabii','gaz naturel','natural gas'],['غاز سام','ghaz sam','gaz toxique','toxic gas'],['غرب أفريقيا','gharb afrqiya','Afrique de l\'Ouest','West Africa'],['غيرة صحية','ghayra sihiya','jalousie saine','healthy jealousy'],['غموض العلم','ghumud alilm','mystère de la science','mystery of science'],['غفران الذنوب','ghufran aldhunub','pardon des péchés','forgiveness of sins'],['غزو ثقافي','ghazw thaqafi','invasion culturelle','cultural invasion'],['غرام وحب','gharam wa hubb','amour et affection','love and affection'],['غبار التاريخ','ghubar altarikh','poussière de l\'histoire','dust of history'],['غضب الجماهير','ghadab aljamahir','colère des masses','anger of masses'],['غياب العدل','ghiyab aladl','absence de justice','absence of justice'],['غذاء متوازن','ghidha mutawazin','alimentation équilibrée','balanced diet'],['غابة الأمازون','ghaba alamazun','forêt d\'Amazonie','Amazon forest'],['غيوم الظلام','ghuyum aldhulam','nuages des ténèbres','clouds of darkness'],['غفلة الإنسان','ghuflt alinsan','négligence humaine','human negligence'],['غريب الأطوار','gharib altatwar','excentrique','eccentric'],['غلبة الحق','ghalbat alhaqq','victoire de la vérité','victory of truth'],['غموض الكون','ghumud alkawn','mystère de l\'univers','mystery of universe'],['غوث المظلومين','ghawth almazlumeen','aide aux opprimés','help for oppressed'],['غياب الأمان','ghiyab alaman','absence de sécurité','absence of security'],['غضب المجتمع','ghadab almujjtama','colère de la société','anger of society'],['غذاء روحي','ghidha ruhi','nourriture spirituelle','spiritual food'],['غابة مطيرة','ghaba mutira','forêt pluvieuse','rainforest'],['غيرة إيجابية','ghayra ijabiya','jalousie positive','positive jealousy'],['غناء وطني','ghina watani','chant patriotique','patriotic singing'],['غرفة الدراسة','ghurfat aldirasa','salle d\'étude','study room'],['غاز الأكسجين','ghaz aluksijin','gaz oxygène','oxygen gas'],['غرب آسيا','gharb asiya','Asie de l\'Ouest','West Asia'],['غموض الإنسان','ghumud alinsan','mystère de l\'humain','mystery of human'],['غفران الله','ghufran allah','pardon de Dieu','forgiveness of God'],['غزو سيبراني','ghazw saibrani','cyberattaque','cyberattack'],['غرام من الذهب','gharam min aldhahab','gramme d\'or','gram of gold'],['غياب الحب','ghiyab alhubb','absence d\'amour','absence of love'],['غذاء الأطفال','ghidha alatifall','alimentation des enfants','children\'s food'],['غابة الأوراس','ghaba alauras','forêt des Aurès','Aurès forest'],['غيرة لا تليق','ghayra la taliq','jalousie inappropriée','inappropriate jealousy'],['غموض المستقبل','ghumud almustaqbal','incertitude de l\'avenir','uncertainty of future'],['غوث الإنسانية','ghawth alinsaniya','aide humanitaire','humanitarian aid'],['غضب الطبيعة','ghadab altabia','colère de la nature','anger of nature'],['غناء الأطفال','ghina alatifall','chant des enfants','children\'s singing'],['غرفة الطوارئ','ghurfat altawari','salle des urgences','emergency room'],['غياب التواصل','ghiyab altawasal','absence de communication','lack of communication'],['غذاء المريض','ghidha almarid','alimentation du malade','patient\'s food'],['غابة الصنوبر','ghaba alsunawbar','forêt de pins','pine forest'],['غيرة على الوطن','ghayra ala alwatan','jalousie pour la patrie','jealousy for homeland'],['غموض الحياة','ghumud alhayat','mystère de la vie','mystery of life'],['غفران وعفو','ghufran wa afw','pardon et grâce','forgiveness and grace'],['غزو الفضاء','ghazw alfadaa','conquête de l\'espace','space conquest'],['غرام الحياة','gharam alhayat','amour de la vie','love of life'],['غضب المقهورين','ghadab almaqhureen','colère des opprimés','anger of oppressed'],['غياب الفهم','ghiyab alfahm','absence de compréhension','lack of understanding'],['غبار الزمن','ghubar alzaman','poussière du temps','dust of time']],
+'ف':[['فلسفة','falsafa','philosophie','philosophy'],['فجر','fajr','aube','dawn'],['فخر','fakhr','fierté','pride'],['فضل','fadl','grâce','grace'],['فرس','faras','cheval','horse'],['فاكهة','fakiha','fruit','fruit'],['فلاح','fallah','agriculteur','farmer'],['فراولة','farwla','fraise','strawberry'],['فول','ful','fèves','beans'],['فيل','fil','éléphant','elephant'],['فضيلة','fadila','vertu','virtue'],['فقه','fiqh','jurisprudence','jurisprudence'],['فكاهة','fukaha','humour','humor'],['فلسطين','filastin','Palestine','Palestine'],['فيزياء','fizia','physique','physics'],['فيروس','firus','virus','virus'],['فيلم','film','film','movie'],['فيلسوف','faylasuf','philosophe','philosopher'],['فريضة','farida','obligation','obligation'],['فردية','fardiya','individualité','individuality'],['فرصة','fursa','opportunité','opportunity'],['فساد','fasad','corruption','corruption'],['فصاحة','fasaha','éloquence','eloquence'],['فعالية','faaliya','efficacité','effectiveness'],['فقدان','fuqdan','perte','loss'],['فلسفة الحياة','falsafat alhayat','philosophie de vie','philosophy of life'],['فن الطهو','fann altahu','art culinaire','culinary art'],['فريق العمل','fariqat alamal','équipe de travail','work team'],['فوز ساحق','fawz sahiq','victoire écrasante','crushing victory'],['فضاء الكون','fada alkawn','espace cosmique','cosmic space'],['فجر الإسلام','fajr alislam','aube de l\'Islam','dawn of Islam'],['فخر الأمة','fakhr alamna','fierté de la nation','pride of nation'],['فلسطين الحرة','filastin alhurra','Palestine libre','free Palestine'],['فيلم وثائقي','film wathaiq','film documentaire','documentary film'],['فيزياء الكم','fizia alkumm','physique quantique','quantum physics'],['فيروس كرونا','firus kuruna','coronavirus','coronavirus'],['فكر نقدي','fikr naqdi','pensée critique','critical thinking'],['فن الخط','fann alkhatt','calligraphie','calligraphy'],['فقه الحياة','fiqh alhayat','jurisprudence de vie','life jurisprudence'],['فلسفة التعليم','falsafat altaalim','philosophie de l\'éducation','philosophy of education'],['فرص العمل','furas alamal','opportunités d\'emploi','job opportunities'],['فساد مالي','fasad mali','corruption financière','financial corruption'],['فعل ورد فعل','fial wa radd fial','action et réaction','action and reaction'],['فقدان الذاكرة','fuqdan aldhakira','amnésie','amnesia'],['فراشة الصحراء','farasha alsahraa','papillon du désert','desert butterfly'],['فضيلة الصبر','fadilat alsabr','vertu de la patience','virtue of patience'],['فلسفة الوجود','falsafat alwujud','philosophie de l\'être','philosophy of being'],['فيزياء الطاقة','fizia altaqa','physique de l\'énergie','physics of energy'],['فن التمثيل','fann altamthil','art dramatique','dramatic art'],['فكر الحداثة','fikr alhadatha','pensée moderne','modern thought'],['فريق الإنقاذ','fariq alinqadh','équipe de secours','rescue team'],['فوز بالمباراة','fawz bilmubarat','victoire au match','match victory'],['فضاء المعلومات','fada almaalumat','espace informationnel','information space'],['فجر الديمقراطية','fajr aldimuqratiya','aube de la démocratie','dawn of democracy'],['فخر الإنجاز','fakhr alinjaz','fierté de l\'accomplissement','pride of achievement'],['فلسفة الحضارة','falsafat alhadara','philosophie de civilisation','philosophy of civilization'],['فيلم رعب','film ruab','film d\'horreur','horror film'],['فيزياء النووية','fizia alnuwawiya','physique nucléaire','nuclear physics'],['فن القتال','fann alqital','art martial','martial art'],['فكر الإبداع','fikr alibda','pensée créative','creative thinking'],['فقه الأقليات','fiqh alaqaliyyat','droit des minorités','minorities jurisprudence'],['فرص التعليم','furas altaalim','opportunités d\'éducation','education opportunities'],['فساد إداري','fasad idari','corruption administrative','administrative corruption'],['فعالية التعليم','faaliyat altaalim','efficacité de l\'enseignement','teaching effectiveness'],['فراشة التحول','farasha altahawwul','papillon de transformation','butterfly of transformation'],['فضيلة الكرم','fadilat alkaram','vertu de la générosité','virtue of generosity'],['فلسفة العلم','falsafat alilm','philosophie des sciences','philosophy of science'],['فيلم تاريخي','film tarikhiyy','film historique','historical film'],['فن الرسم','fann alrassom','art pictural','pictorial art'],['فكر الإصلاح','fikr alislah','pensée de réforme','reform thinking'],['فريق إنقاذ','fariq inqadh','équipe de sauvetage','rescue team']],
+'ق':[['قريب','qarib','proche','near'],['قلم','qalam','stylo','pen'],['قصر','qasr','palais','palace'],['قبة','qubba','dôme','dome'],['قمح','qamh','blé','wheat'],['قطن','qutn','coton','cotton'],['قهوة','qahwa','café','coffee'],['قيادة','qiyada','leadership','leadership'],['قدس','quds','Jérusalem','Jerusalem'],['قضاء','qada','justice','justice'],['قضية','qadiya','cause','cause'],['قطع','qata','couper','cut'],['قطيعة','qatia','rupture','rupture'],['قعر','qar','fond','bottom'],['قفزة','qafza','saut','jump'],['قلعة','qala','château','castle'],['قناة','qanah','canal','canal'],['قهر','qahr','oppression','oppression'],['قواعد','qawaid','règles','rules'],['قوائم','qawa\'im','listes','lists'],['قائد','qa\'id','chef','leader'],['قائمة','qa\'ima','liste','list'],['قابلية','qabiliya','capacité','capability'],['قادر','qadir','capable','capable'],['قاسٍ','qas','dur','hard'],['قاطع','qati','coupant','cutting'],['قافلة','qafila','caravane','caravan'],['قالب','qalib','moule','mold'],['قامة','qama','taille','height'],['قباب','qibab','dômes','domes'],['قبائل','qaba\'il','tribus','tribes'],['قبول','qabul','acceptation','acceptance'],['قبيلة','qabila','tribu','tribe'],['قتال','qital','combat','combat'],['قدرات','qudrat','capacités','capabilities'],['قدوة','qudwa','modèle','model'],['قرابة','qaraba','parenté','kinship'],['قراءة','qiraa','lecture','reading'],['قرب','qurb','proximité','proximity'],['قرن','qarn','siècle','century'],['قرون','quroun','siècles','centuries'],['قساوة','qasawa','dureté','harshness'],['قسط','qist','équité','equity'],['قسوة','qaswa','cruauté','cruelty'],['قصيدة','qasida','poème','poem'],['قضبان','qudban','barreaux','bars'],['قطار','qitar','train','train'],['قطب','qutb','pôle','pole'],['قطة','qitta','chatte','cat'],['قفص','qafas','cage','cage'],['قلق','qalaq','inquiétude','anxiety'],['قليل','qalil','peu','few'],['قمة','qimma','sommet','summit'],['قناع','qinaa','masque','mask'],['قهوة عربية','qahwa arabiya','café arabe','Arabic coffee'],['قلب النظام','qalb alnidham','cœur du système','heart of system'],['قانون الطبيعة','qanun altabia','loi naturelle','natural law'],['قرار حكيم','qarar hakim','décision sage','wise decision'],['قوة الإرادة','quwwat alirada','force de volonté','strength of will'],['قيمة الإنسان','qimat alinsan','valeur humaine','human value'],['قيادة حكيمة','qiyada hakima','leadership sage','wise leadership'],['قدس الأقداس','quds alaqddas','Saint des saints','Holy of Holies'],['قراءة النصوص','qiraa alnusus','lecture des textes','text reading'],['قصة النجاح','qissat alnajah','histoire de succès','success story'],['قوة الشعب','quwwat alshaab','force du peuple','power of people'],['قيمة الوقت','qimat alwaqt','valeur du temps','value of time'],['قانون الجذب','qanun aljadhhb','loi d\'attraction','law of attraction'],['قرية آمنة','qarya amina','village sûr','safe village'],['قدر الله','qadr allah','destin divin','divine destiny'],['قرار تاريخي','qarar tarikhiyy','décision historique','historical decision'],['قلم الكاتب','qalam alkatib','stylo de l\'écrivain','writer\'s pen'],['قصر الحكمة','qasr alhikma','palais de la sagesse','palace of wisdom'],['قمر رمضان','qamar ramadan','lune de Ramadan','Ramadan moon'],['قطار الحياة','qitar alhayat','train de la vie','train of life'],['قوة الحق','quwwat alhaqq','force de la vérité','strength of truth'],['قيادة الأمة','qiyada alamna','leadership de la nation','leadership of nation'],['قضاء عادل','qada adil','justice équitable','fair justice'],['قضية الحق','qadiyat alhaqq','cause de la vérité','cause of truth'],['قلب الأمة','qalb alamna','cœur de la nation','heart of nation'],['قوة التغيير','quwwat altaghyir','force de changement','power of change']],
+'ك':[['كتابة','kitaba','écriture','writing'],['كثير','kathir','beaucoup','many'],['كلب','kalb','chien','dog'],['كرسي','kursi','chaise','chair'],['كاتب','katib','écrivain','writer'],['كرم','karam','générosité','generosity'],['كفاح','kifah','lutte','struggle'],['كوب','kub','verre','glass'],['كيفية','kayfiya','méthode','method'],['كنيسة','kanisa','église','church'],['كارثة','karitha','catastrophe','catastrophe'],['كاشف','kashif','détecteur','detector'],['كاهن','kahin','prêtre','priest'],['كبار','kibar','anciens','elders'],['كتاب مقدس','kitab muqaddas','livre sacré','holy book'],['كرة القدم','kurat alqadam','football','football'],['كرة السلة','kurat alsalla','basketball','basketball'],['كرة الطائرة','kurat alta\'ira','volleyball','volleyball'],['كوكب الأرض','kawkab alarrd','planète Terre','planet Earth'],['كيمياء عضوية','kimiya udwiya','chimie organique','organic chemistry'],['كمال الأخلاق','kamal alakhlaq','perfection des mœurs','perfection of morals'],['كهرباء تجديدية','kahraba tajdidiya','électricité renouvelable','renewable electricity'],['كاميرا رقمية','kamira raqmiya','caméra numérique','digital camera'],['كبريت','kibrit','soufre','sulfur'],['كتلة','kutla','masse','mass'],['كثافة','kathafa','densité','density'],['كحول طبي','kuhul tibbi','alcool médical','medical alcohol'],['كدمة','kaduma','ecchymose','bruise'],['كراهية','karahiya','haine','hatred'],['كرب','karab','détresse','distress'],['كسل','kasal','paresse','laziness'],['كشف','kashf','découverte','discovery'],['كعبة','kaba','Kaaba','Kaaba'],['كفاءة','kafaa','compétence','competence'],['كلية','kulliya','faculté','faculty'],['كمبيوتر','kambyutar','ordinateur','computer'],['كمية','kammiya','quantité','quantity'],['كنعان','kanaan','Canaan','Canaan'],['كنف','kanaf','protection','protection'],['كهف','kahf','grotte','cave'],['كيان','kiyan','entité','entity'],['كارثة طبيعية','karitha tabiiya','catastrophe naturelle','natural catastrophe'],['كاتب روائي','katib riwa\'i','romancier','novelist'],['كرة قدم عربية','kurat qadam arabiya','football arabe','Arab football'],['كوكب المريخ','kawkab almarikh','planète Mars','planet Mars'],['كيمياء حيوية','kimiya hayawiya','biochimie','biochemistry'],['كمال الجمال','kamal aljjmal','perfection de beauté','perfection of beauty'],['كهرباء شمسية','kahraba shamsiya','électricité solaire','solar electricity'],['كاميرا مراقبة','kamira muraqaba','caméra de surveillance','surveillance camera'],['كتلة الكون','kutlat alkawn','masse de l\'univers','mass of universe'],['كثافة السكان','kathafat alsukan','densité de population','population density'],['كفاءة الطاقة','kafaat altaqa','efficacité énergétique','energy efficiency'],['كلية الطب','kulliyat altibb','faculté de médecine','medical faculty'],['كمبيوتر لوحي','kambyutar lawhi','tablette','tablet computer'],['كيان سياسي','kiyan siyasi','entité politique','political entity'],['كشف علمي','kashf ilmi','découverte scientifique','scientific discovery'],['كعبة الشعراء','kabet alshuara','Kaaba des poètes','Kaaba of poets'],['كفاح الشعوب','kifah alshuub','lutte des peuples','peoples\' struggle'],['كتاب التاريخ','kitab altarikh','livre d\'histoire','history book'],['كرم الضيافة','karam aldiyafa','générosité de l\'hospitalité','hospitality generosity'],['كمال الدين','kamal aldin','perfection de la religion','perfection of religion'],['كهرباء المدينة','kahraba almadina','électricité de la ville','city electricity'],['كارثة إنسانية','karitha insaniya','catastrophe humanitaire','humanitarian catastrophe'],['كاتب مسرحي','katib masrahi','dramaturge','playwright'],['كوكب زحل','kawkab zuhal','planète Saturne','planet Saturn'],['كيمياء ذرية','kimiya dhariya','chimie atomique','atomic chemistry'],['كمال الإنسان','kamal alinsan','perfection humaine','human perfection'],['كهرباء طبيعية','kahraba tabiiya','électricité naturelle','natural electricity'],['كيان مستقل','kiyan mustaqil','entité indépendante','independent entity'],['كشف الأسرار','kashf alasrar','dévoilement de secrets','unveiling secrets'],['كفاءة الإنتاج','kafaat alintaj','efficacité de production','production efficiency'],['كلية الهندسة','kulliyat alhandasa','faculté d\'ingénierie','engineering faculty'],['كمبيوتر شخصي','kambyutar shakhsi','ordinateur personnel','personal computer'],['كتلة الأرض','kutlat alarrd','masse de la Terre','mass of Earth'],['كثافة المعلومات','kathafat almaalumat','densité d\'informations','information density']],
+'ل':[['لحظة','lahza','moment','moment'],['ليمون','laymun','citron','lemon'],['لهب','lahab','flamme','flame'],['لبن','laban','lait','milk'],['لوحة','lawha','tableau','painting'],['لمسة','lamsa','touche','touch'],['لفظ','lafzh','mot','word'],['لعبة','luba','jeu','game'],['لغز','lughz','énigme','riddle'],['للأبد','lilabad','pour toujours','forever'],['لاجئ','laji','réfugié','refugee'],['لازم','lazim','nécessaire','necessary'],['لامع','lami','brillant','shining'],['لانهائي','lanihaii','infini','infinite'],['لائق','la\'iq','convenable','suitable'],['لائحة','laiiha','liste','list'],['لجنة','lajna','comité','committee'],['لحد','lahd','tombe','grave'],['لذة','ladhdha','plaisir','pleasure'],['لسعة','las\'a','piqûre','sting'],['لطيف','latif','doux','gentle'],['لعل','laall','peut-être','perhaps'],['لفيف','lafif','enroulé','rolled'],['لقطة','luqta','photo','shot photo'],['لهو','lahw','divertissement','entertainment'],['لواء','liwa','brigade','brigade'],['لؤم','lu\'m','bassesse','meanness'],['لغة العرب','lughat alarab','langue arabe','Arabic language'],['لون الطبيعة','lawn altabia','couleur de la nature','color of nature'],['ليل القدر','layl alqadr','nuit du destin','night of destiny'],['لقاء الأحباء','liqa alahabba','rencontre des proches','meeting of loved ones'],['لطف الله','lutf allah','grâce de Dieu','grace of God'],['لسان المعلم','lisan almuallim','langue de l\'enseignant','teacher\'s language'],['لحم الخروف','lahm alkharruf','viande de mouton','mutton'],['لؤلؤ البحر','lulu albahr','perle de mer','sea pearl'],['لاعب كرة','laib kura','joueur de ballon','ball player'],['لباس التقوى','libas altaqwa','vêtement de piété','garment of piety'],['لحظة النصر','lahzat alnnasr','moment de la victoire','moment of victory'],['لهيب النار','lahib alnnar','flamme du feu','flame of fire'],['لوحة فنية','lawha faniya','tableau artistique','artistic painting'],['لمسة الحب','lamsat alhubb','touche d\'amour','touch of love'],['لغة البرمجة','lughat albarmaja','langage de programmation','programming language'],['لعبة الحياة','lubat alhayat','jeu de la vie','game of life'],['لغز الكون','lughz alkawn','énigme de l\'univers','enigma of universe'],['للأبد وأبداً','lilabad wa abadan','pour l\'éternité','for eternity'],['لاجئ سياسي','laji siyasi','réfugié politique','political refugee'],['لجنة دولية','lajna dawliya','comité international','international committee'],['لذة المعرفة','ladhdhat almaarifa','plaisir de la connaissance','pleasure of knowledge'],['لطف المعلم','lutf almuallim','gentillesse de l\'enseignant','teacher\'s kindness'],['لفظ جميل','lafzh jamil','beau mot','beautiful word'],['لغة الإشارة','lughat alishara','langue des signes','sign language'],['لون الأمل','lawn alamal','couleur de l\'espoir','color of hope'],['ليل القرن','layl alqarn','nuit du siècle','night of the century'],['لقاء التاريخ','liqa altarikh','rencontre de l\'histoire','meeting of history'],['لطف وكرم','lutf wa karam','gentillesse et générosité','kindness and generosity'],['لسان الحال','lisan alhal','éloquence de la situation','eloquence of the situation'],['لحم بقري','lahm baqari','bœuf','beef'],['لاعب محترف','laib muhtaraf','joueur professionnel','professional player'],['لباس عسكري','libas askari','uniforme militaire','military uniform'],['لحظة الحقيقة','lahzat alhaqiqa','moment de vérité','moment of truth'],['لهب الثورة','lahab althawra','flamme de la révolution','flame of revolution'],['لوحة المفاتيح','lawhat almafatih','clavier','keyboard'],['لمسة الفنان','lamsat alfanan','touche de l\'artiste','artist\'s touch'],['لغة الأجداد','lughat alajdad','langue des ancêtres','language of ancestors'],['لعبة الشطرنج','lubat alshatranj','jeu d\'échecs','chess game'],['لغز الحياة','lughz alhayat','énigme de la vie','enigma of life'],['لاجئ بيئي','laji bii','réfugié écologique','ecological refugee'],['لجنة التحقيق','lajna altahqiq','comité d\'enquête','investigation committee'],['لذة الفوز','ladhdhat alfawz','plaisir de la victoire','pleasure of victory'],['لطف الطبيعة','lutf altabia','douceur de la nature','gentleness of nature'],['لفظة الحق','lafzhat alhaqq','parole de vérité','word of truth'],['لغة الأم','lughat alumm','langue maternelle','mother tongue'],['لون السماء','lawn alsama','couleur du ciel','color of sky']],
+'م':[['مكتبة','maktaba','bibliothèque','library'],['مفتاح','miftah','clé','key'],['مشروع','mashru','projet','project'],['مهنة','mihna','profession','profession'],['موعد','mawid','rendez-vous','appointment'],['ميناء','mina','port','port'],['مبدأ','mabda','principe','principle'],['متحف','mathaf','musée','museum'],['مناخ','manakh','climat','climate'],['مطر','matar','pluie','rain'],['مواطن','muwatin','citoyen','citizen'],['مدير','mudir','directeur','director'],['مزرعة','mazraa','ferme','farm'],['مسافر','musafir','voyageur','traveler'],['مصنع','masna','usine','factory'],['معلم','muallim','enseignant','teacher'],['مفكر','mufakkir','penseur','thinker'],['منهج','manhaj','programme','curriculum'],['موارد','mawarid','ressources','resources'],['مواقف','mawaqif','positions','positions'],['مؤتمر','mutamar','conférence','conference'],['مؤسسة','muassasa','institution','institution'],['محاكمة','muhakama','procès','trial'],['محاضرة','muhadara','conférence','lecture'],['محاسبة','muhasaba','comptabilité','accounting'],['محاولة','muhawala','tentative','attempt'],['محبوب','mahbub','aimé','loved'],['محتاج','muhtaj','nécessiteux','needy'],['محيط','muhit','océan','ocean'],['مدرب','mudarrib','entraîneur','trainer'],['مدني','madani','civil','civil'],['مرحبا','marhaba','bienvenue','welcome'],['مرض','marad','maladie','disease'],['مساعدة','musaada','aide','help'],['مسؤول','masul','responsable','responsible'],['مشترك','mushtarak','commun','common'],['مشكلة','mushkila','problème','problem'],['مصير','masir','destin','fate'],['معادلة','muadala','équation','equation'],['معركة','maraka','bataille','battle'],['معنى','mana','signification','meaning'],['مغامرة','mughamara','aventure','adventure'],['ملاحظة','mulahaza','observation','observation'],['مليون','milyun','million','million'],['ممارسة','mumarasa','pratique','practice'],['مناسبة','munasaba','occasion','occasion'],['منطق','mantiq','logique','logic'],['منهج تعليمي','manhaj talimi','programme éducatif','educational curriculum'],['موهبة','mawhuba','talent','talent'],['مياه','miyah','eaux','waters'],['ميدان','maydan','place','square field'],['ماء عذب','ma adhb','eau douce','fresh water'],['مدرسة ابتدائية','madrasa ibtida\'iya','école primaire','primary school'],['مسجد الحرام','masjid alharam','Grande Mosquée','Grand Mosque'],['محبة الوطن','mahabbat alwatan','amour de la patrie','love of homeland'],['مدينة المستقبل','madinat almustaqbal','ville du futur','city of the future'],['مستقبل مشرق','mustaqbal mushriq','avenir brillant','bright future'],['معرفة علمية','marifa ilmiya','connaissance scientifique','scientific knowledge'],['موسيقى عربية','musiqa arabiya','musique arabe','Arabic music'],['ملك الغابة','malik alghaba','roi de la forêt','king of forest'],['منزل العائلة','manzil alaila','maison familiale','family home'],['مكتبة وطنية','maktaba wataniya','bibliothèque nationale','national library'],['مفتاح النجاح','miftah alnajah','clé du succès','key to success'],['مشروع طموح','mashru tumuh','projet ambitieux','ambitious project'],['مهنة المستقبل','mihnat almustaqbal','métier du futur','profession of the future'],['موعد طبي','mawid tibbi','rendez-vous médical','medical appointment'],['ميناء تجاري','mina tijari','port commercial','commercial port'],['مبدأ العدالة','mabda aladala','principe de justice','principle of justice'],['متحف وطني','mathaf watani','musée national','national museum'],['مناخ متغير','manakh mutaghayyir','climat changeant','changing climate'],['مطر غزير','matar ghazir','pluie abondante','heavy rain'],['مواطن صالح','muwatin salih','citoyen vertueux','virtuous citizen'],['مدير تنفيذي','mudir tanfidhi','directeur exécutif','executive director'],['مزرعة عضوية','mazraa udwiya','ferme biologique','organic farm'],['مصنع ذكي','masna dhaki','usine intelligente','smart factory'],['معلم متميز','muallim mutamayyiz','enseignant distingué','distinguished teacher'],['مفكر عربي','mufakkir arabi','penseur arabe','Arab thinker'],['منهج إسلامي','manhaj islami','programme islamique','Islamic curriculum'],['موارد طبيعية','mawarid tabiiya','ressources naturelles','natural resources'],['مؤتمر دولي','mutamar dawli','conférence internationale','international conference'],['مؤسسة تعليمية','muassasa talimiya','institution éducative','educational institution'],['محاكمة عادلة','muhakama adila','procès équitable','fair trial'],['مشكلة عالمية','mushkila alamiya','problème mondial','global problem'],['معنى الحياة','mana alhayat','sens de la vie','meaning of life'],['مغامرة عظيمة','mughamara adhima','grande aventure','great adventure'],['ملاحظة علمية','mulahaza ilmiya','observation scientifique','scientific observation'],['مصير الأمة','masir alamna','destin de la nation','destiny of nation'],['مبادئ العدالة','mabadi aladala','principes de justice','principles of justice'],['منطق الحياة','mantiq alhayat','logique de la vie','logic of life'],['موهبة نادرة','mawhuba nadira','talent rare','rare talent']],
+'ن':[['نصيحة','nasiha','conseil','advice'],['نجمة','najma','étoile','star'],['نخلة','nakhla','palmier','palm tree'],['نملة','namla','fourmi','ant'],['نزاهة','nazaha','intégrité','integrity'],['نطق','nutq','parole','speech'],['نقاء','naqa','pureté','purity'],['نفط','naft','pétrole','oil'],['نحل','nahl','abeille','bee'],['نوم','nawm','sommeil','sleep'],['نجاة','najat','salut','salvation'],['ندم','nadam','regret','regret'],['ندى','nada','rosée','dew'],['نزاع','niza','dispute','dispute'],['نسبة','nisba','pourcentage','percentage'],['نسيان','nisyan','oubli','forgetting'],['نظافة','nadhafa','propreté','cleanliness'],['نعل','nal','chaussure','shoe'],['نفاق','nifaq','hypocrisie','hypocrisy'],['نقد','naqd','critique','criticism'],['نقل','naql','transport','transport'],['نمو','numuw','croissance','growth'],['ننة','ninna','berceuse','lullaby'],['نهار','nahar','jour','day'],['نواة','nawah','noyau','nucleus'],['نية','niya','intention','intention'],['نجاح دراسي','najah dirasi','succès scolaire','academic success'],['نهر النيل','nahr alnil','fleuve Nil','Nile river'],['نور العلم','nur alilm','lumière du savoir','light of knowledge'],['نفس بشرية','nafs bashariya','âme humaine','human soul'],['نساء العالم','nisa alalm','femmes du monde','women of the world'],['نظام التعليم','nidham altaalim','système éducatif','education system'],['نصر الحق','nasr alhaqq','victoire de la vérité','victory of truth'],['نعمة الصحة','nimat alsiha','bienfait de la santé','blessing of health'],['نمو اقتصادي','numuw iqtisadi','croissance économique','economic growth'],['نشاط فكري','nashat fikri','activité intellectuelle','intellectual activity'],['نصيحة الحكيم','nasihat alhakeem','conseil du sage','sage\'s advice'],['نجمة القطب','najmat alqutb','étoile polaire','polar star'],['نخلة التمر','nakhlat altamr','palmier dattier','date palm'],['نملة العاملة','namlat alamila','fourmi travailleuse','worker ant'],['نزاهة القضاء','nazahat alqada','intégrité judiciaire','judicial integrity'],['نطق الحقيقة','nutq alhaqiqa','dire la vérité','speaking truth'],['نقاء الروح','naqa alruh','pureté de l\'âme','purity of soul'],['نفط الخليج','naft alkhalij','pétrole du Golfe','Gulf oil'],['نحل العسل','nahl alasal','abeille à miel','honey bee'],['نوم هادئ','nawm hadi','sommeil paisible','peaceful sleep'],['نجاة من الخطر','najat min alkhatar','salut du danger','salvation from danger'],['ندم وتوبة','nadam wa tawba','regret et repentir','regret and repentance'],['ندى الصباح','nada alsabah','rosée du matin','morning dew'],['نزاع مسلح','niza musalah','conflit armé','armed conflict'],['نسبة البطالة','nisbat albitala','taux de chômage','unemployment rate'],['نظافة البيئة','nadhafat albia','propreté de l\'environnement','environmental cleanliness'],['نفاق سياسي','nifaq siyasi','hypocrisie politique','political hypocrisy'],['نقد بناء','naqd bina','critique constructive','constructive criticism'],['نقل المعرفة','naql almaarifa','transfert de connaissance','knowledge transfer'],['نمو سكاني','numuw sukani','croissance démographique','demographic growth'],['نهار ومساء','nahar wa masa','jour et soir','day and evening'],['نواة الخلية','nawat alkhalia','noyau cellulaire','cell nucleus'],['نية طيبة','niya tayiba','bonne intention','good intention'],['نجاح باهر','najah bahir','succès éclatant','brilliant success'],['نور الحقيقة','nur alhaqiqa','lumière de la vérité','light of truth'],['نفس الطموح','nafs altumuh','âme ambitieuse','ambitious soul'],['نظام السياسة','nidham alsiyasa','système politique','political system'],['نصر المظلومين','nasr almazlumeen','victoire des opprimés','victory of oppressed'],['نعمة الأمان','nimat alaman','bienfait de la sécurité','blessing of security'],['نشاط اقتصادي','nashat iqtisadi','activité économique','economic activity'],['نجمة الأمل','najmat alamal','étoile d\'espoir','star of hope'],['نزاهة السياسيين','nazahat alsiyasiyeen','intégrité des politiciens','politicians\' integrity'],['نقاء الماء','naqa almaa','pureté de l\'eau','purity of water'],['نمو التقنية','numuw altaqniya','croissance technologique','technological growth'],['نجاة الإنسانية','najat alinsaniya','salut de l\'humanité','salvation of humanity'],['نهار مشرق','nahar mushriq','jour brillant','bright day'],['نجاح الأمة','najah alamna','succès de la nation','success of nation'],['نور القرآن','nur alquran','lumière du Coran','light of Quran'],['نفس مطمئنة','nafs mutmaina','âme sereine','serene soul'],['نساء رائدات','nisa raidat','femmes pionnières','pioneering women'],['نظام عادل','nidham adil','système juste','just system'],['نصر مؤزر','nasr muazzar','victoire éclatante','glorious victory'],['نعمة الأمن','nimat alaman','bienfait de la sécurité','blessing of security'],['نمو متوازن','numuw mutawazin','croissance équilibrée','balanced growth'],['نشاط مثمر','nashat muthmir','activité fructueuse','fruitful activity'],['نصيحة سديدة','nasiha sadida','conseil judicieux','sound advice'],['نجمة مضيئة','najma mudiya','étoile brillante','shining star'],['نخلة شاهقة','nakhla shahiqa','grand palmier','tall palm tree'],['نزاهة التقارير','nazahat altaqarir','intégrité des rapports','integrity of reports'],['نطق الشهادة','nutq alshahada','récitation de la shahada','recitation of shahada'],['نقاء الضمير','naqa aldamir','pureté de conscience','purity of conscience'],['نفط وطاقة','naft wa taqa','pétrole et énergie','oil and energy'],['نحل وعسل','nahl wa asal','abeille et miel','bee and honey'],['نوم هانئ','nawm hani','sommeil paisible','peaceful sleep']],
+'ه':[['هندسة','handasa','ingénierie','engineering'],['هجوم','hujum','attaque','attack'],['هبة','hiba','don','gift'],['هناء','hana','bonheur','happiness'],['هروب','hurub','fuite','escape'],['هلع','hala','panique','panic'],['هيمنة','haymana','domination','domination'],['هاتف','hatif','téléphone','phone'],['هاجس','hajis','obsession','obsession'],['هامش','hamish','marge','margin'],['هبوط','hubut','descente','descent'],['هجاء','hija','satire','satire'],['هجاء أبجدي','hija abajdi','alphabet','alphabet'],['هجين','hijin','hybride','hybrid'],['هدنة','hudna','trêve','truce'],['هدية قيمة','hadiya qayima','cadeau précieux','precious gift'],['هوية وطنية','hawiya wataniya','identité nationale','national identity'],['هدوء النفس','huduu alnafs','sérénité de l\'âme','serenity of soul'],['هلال الإسلام','hilal alislam','croissant islamique','Islamic crescent'],['همة عالية','himma alia','grande ambition','high ambition'],['هجرة النبي','hijrat alnabi','émigration du Prophète','Prophet\'s migration'],['هندسة الفضاء','handasat alfadaa','ingénierie spatiale','space engineering'],['هجوم سيبراني','hujum saibrani','cyberattaque','cyberattack'],['هناء العائلة','hana alaila','bonheur familial','family happiness'],['هروب من الواقع','hurub min alwaqi','fuite de la réalité','escape from reality'],['هيمنة ثقافية','haymana thaqafiya','domination culturelle','cultural domination'],['هاتف ذكي','hatif dhaki','smartphone','smartphone'],['هاجس الأمن','hajis alaman','obsession sécuritaire','security obsession'],['هبوط الطائرة','hubut alta\'ira','atterrissage','plane landing'],['هجاء الشعراء','hija alshuara','satire des poètes','poets\' satire'],['هدنة مؤقتة','hudna muaqata','trêve temporaire','temporary truce'],['هدف استراتيجي','hadaf istratiji','objectif stratégique','strategic goal'],['هوية الشعب','hawiyat alshaab','identité du peuple','people\'s identity'],['هدوء البحر','huduu albahr','calme de la mer','calm of sea'],['هلال رمضان','hilal ramadan','croissant du Ramadan','Ramadan crescent'],['همة الشباب','himmat alshabab','ambition de la jeunesse','youth\'s ambition'],['هجرة العمالة','hijrat alamala','migration de la main-d\'œuvre','labor migration'],['هندسة المعلومات','handasat almaalumat','informatique','computer science'],['هجوم عسكري','hujum askari','attaque militaire','military attack'],['هبة من الله','hiba min allah','don de Dieu','gift from God'],['هناء وسعادة','hana wa saada','bonheur et félicité','happiness and bliss'],['هروب الأدمغة','hurub alaadhmigha','fuite des cerveaux','brain drain'],['هيمنة اقتصادية','haymana iqtisadiya','domination économique','economic domination'],['هاتف محمول','hatif mahmul','téléphone portable','mobile phone'],['هبوط القمر','hubut alqamar','atterrissage lunaire','lunar landing'],['هجاء سياسي','hija siyasi','satire politique','political satire'],['هدف بعيد','hadaf bayd','objectif lointain','distant goal'],['هوية ثقافية','hawiya thaqafiya','identité culturelle','cultural identity'],['هدوء الليل','huduu allayl','calme de la nuit','calm of night'],['هلال ونجمة','hilal wa najma','croissant et étoile','crescent and star'],['همة لا تكل','himma la takill','ambition infatigable','tireless ambition'],['هجرة داخلية','hijra dakhiliya','migration interne','internal migration'],['هندسة التصميم','handasa altasmim','ingénierie de conception','design engineering'],['هجوم بري','hujum barri','attaque terrestre','land attack'],['هناء الروح','hana alruh','bonheur de l\'âme','happiness of soul'],['هروب الحياة','hurub alhayat','fugacité de la vie','fleetingness of life'],['هيمنة عسكرية','haymana askariya','domination militaire','military domination'],['هاتف الخير','hatif alkhyr','appel du bien','call of good'],['هجاء أخلاقي','hija akhlaqi','satire morale','moral satire'],['هدنة دائمة','hudna da\'ima','trêve permanente','permanent truce'],['هدف النبيل','hadaf alnabil','noble objectif','noble goal'],['هوية إسلامية','hawiya islamiya','identité islamique','Islamic identity'],['هلع من المجهول','hala min almajhul','panique face à l\'inconnu','panic before unknown'],['هيمنة إعلامية','haymana ilamiya','domination médiatique','media domination'],['هجوم مضاد','hujum mudad','contre-attaque','counter-attack'],['هروب للأمام','hurub lilaman','fuite en avant','forward escape'],['هندسة الاتصالات','handasa alistilalat','ingénierie des télécommunications','telecommunications engineering'],['هبوط الاقتصاد','hubut aliqtisad','déclin économique','economic decline'],['هجرة الشباب','hijrat alshabab','émigration des jeunes','youth emigration'],['همة العمل','himmat alamal','ardeur au travail','work ardor'],['هاتف الأمل','hatif alamal','appel d\'espoir','call of hope'],['هوية راسخة','hawiya rasikha','identité ferme','firm identity'],['هدف نبيل','hadaf nabil','noble objectif','noble goal'],['هدية القدر','hadiyat alqadr','cadeau du destin','gift of destiny'],['هيبة الدولة','hayba aldawla','prestige de l\'État','prestige of state'],['هجرة الأدمغة','hijra alaadhmigha','fuite des cerveaux','brain drain'],['هندسة المستقبل','handasa almustaqbal','ingénierie du futur','engineering of future']],
+'و':[['وفاء','wafa','loyauté','loyalty'],['ولادة','wilada','naissance','birth'],['وزير','wazir','ministre','minister'],['وداع','wada','adieu','farewell'],['وسط','wast','milieu','middle'],['وراثة','wiratha','héritage','heritage'],['وهم','wahm','illusion','illusion'],['وحش','wahsh','monstre','monster'],['وجود','wujud','existence','existence'],['وصية','wasiya','testament','will'],['وضع','wad','situation','situation'],['وحي','wahy','révélation','revelation'],['ونة','wanna','fatigue','fatigue'],['ورشة','warsha','atelier','workshop'],['وسيلة','wasila','moyen','means'],['وطيس','watis','intense','intense'],['وعظ','waz','sermon','sermon'],['ولاء','wala','allégeance','allegiance'],['وميض','wamid','éclat','flash'],['وهج','wahaj','éclat','glow'],['وطن الأجداد','watan alajdad','patrie des ancêtres','ancestral homeland'],['وقت الفراغ','waqt alfaragh','temps libre','free time'],['واجب المواطن','wajib almuwatin','devoir du citoyen','citizen\'s duty'],['وردة الصحراء','wardat alsahraa','rose du désert','desert rose'],['وجه الحقيقة','wajh alhaqiqa','face de la vérité','face of truth'],['وثيقة رسمية','wathiqa rasmiya','document officiel','official document'],['وحدة الأمة','wahdat alamna','unité de la nation','unity of nation'],['وفاء بالعهد','wafa bilahd','fidélité à la promesse','fidelity to promise'],['وزير الخارجية','wazir alkharijiya','ministre des affaires étrangères','foreign minister'],['وراثة ثقافية','wiratha thaqafiya','héritage culturel','cultural heritage'],['وجود الله','wujud allah','existence de Dieu','existence of God'],['وصية الأب','wasiyat alab','testament du père','father\'s will'],['وضع سياسي','wad siyasi','situation politique','political situation'],['وحي قرآني','wahy qurani','révélation coranique','Quranic revelation'],['ورشة عمل','warsha amal','atelier de travail','work workshop'],['وسيلة التعليم','wasila altaalim','moyen d\'enseignement','teaching means'],['ولاء للوطن','wala lilwatan','loyauté à la patrie','loyalty to homeland'],['وطن محرر','watan muharrar','patrie libérée','liberated homeland'],['وقت الدراسة','waqt aldirasa','temps d\'étude','study time'],['واجب التاريخ','wajib altarikh','devoir de l\'histoire','duty of history'],['وردة الحياة','wardat alhayat','rose de la vie','rose of life'],['وجه الإنسان','wajh alinsan','visage humain','human face'],['وثيقة الحقوق','wathiqat alhuquq','déclaration des droits','declaration of rights'],['وحدة الشعوب','wahdat alshuub','unité des peuples','unity of peoples'],['وفاء الأصدقاء','wafa alasdiqa','fidélité des amis','friends\' loyalty'],['ولادة الفجر','wiladat alfajr','naissance de l\'aube','birth of dawn'],['وزير التعليم','wazir altaalim','ministre de l\'éducation','minister of education'],['وداع الأحباء','wada alahabba','adieu aux proches','farewell to loved ones'],['وسط المدينة','wast almadina','centre-ville','city center'],['وراثة علمية','wiratha ilmiya','héritage scientifique','scientific heritage'],['وهم الحياة','wahm alhayat','illusion de la vie','illusion of life'],['وجود الإنسان','wujud alinsan','existence humaine','human existence'],['وحي الإلهام','wahy alilham','révélation d\'inspiration','revelation of inspiration'],['ورشة الإبداع','warsha alibda','atelier de créativité','creativity workshop'],['وسيلة التواصل','wasila altawasal','moyen de communication','means of communication'],['ولاء الجندي','wala aljundi','loyauté du soldat','soldier\'s loyalty'],['وطن الأحرار','watan alahrrar','patrie des libres','homeland of the free'],['وقت الراحة','waqt alraha','temps de repos','rest time'],['واجب الدفاع','wajib aldifaa','devoir de défense','duty of defense'],['وردة الأمل','wardat alamal','rose d\'espoir','rose of hope'],['وجود الكون','wujud alkawn','existence de l\'univers','existence of universe'],['وحدة العرب','wahdat alarab','unité des Arabes','unity of Arabs'],['وفاء بالوعد','wafa bilwad','fidélité à la promesse','keeping promise'],['ولادة الحضارة','wilada alhadara','naissance de la civilisation','birth of civilization'],['وراثة الإنسانية','wiratha alinsaniya','héritage de l\'humanité','heritage of humanity'],['وهم القوة','wahm alquwwa','illusion de la force','illusion of power'],['وحي الشاعر','wahy alshair','inspiration du poète','poet\'s inspiration'],['ورشة التقنية','warsha altaqniya','atelier technologique','technology workshop'],['ولاء الإنسان','wala alinsan','loyauté humaine','human loyalty'],['وطن الحرية','watan alhurriya','patrie de la liberté','homeland of freedom'],['وقت التغيير','waqt altaghyir','temps du changement','time of change'],['وضع استراتيجي','wad istratiji','situation stratégique','strategic situation'],['وحدة المسلمين','wahdat almuslimeen','unité des musulmans','unity of Muslims'],['وجود الحق','wujud alhaqq','existence de la vérité','existence of truth'],['وصية الأنبياء','wasiyat alanabiyaa','testament des prophètes','testament of prophets'],['وسيلة التقدم','wasila altaqadum','moyen de progrès','means of progress']],
+'ي':[['يعمل','yamal','travailler','work'],['يشرب','yashrab','boire','drink'],['يأكل','yakul','manger','eat'],['ينام','yanam','dormir','sleep'],['يومي','yawmi','quotidien','daily'],['ينبغي','yanbaghi','falloir','should'],['يسعى','yasia','s\'efforcer','strive'],['يستطيع','yastati','pouvoir','be able'],['يجد','yajid','trouver','find'],['يعرف','yarif','savoir','know'],['يتعلم','yataalm','apprendre','learn'],['يكتب','yaktub','écrire','write'],['يقرأ','yaqra','lire','read'],['يتكلم','yatakallm','parler','speak'],['يسمع','yasmaa','écouter','listen'],['يرى','yara','voir','see'],['يمشي','yamshi','marcher','walk'],['يركض','yarkud','courir','run'],['يبني','yabni','construire','build'],['يفكر','yufakkir','penser','think'],['يحكم','yahkum','gouverner','govern'],['يسافر','yusafir','voyager','travel'],['يتحدث','yatahaddath','discuter','discuss'],['يتأمل','yataamal','méditer','meditate'],['يتدرب','yatadarrab','s\'entraîner','train'],['يتعاون','yataawun','coopérer','cooperate'],['يتقدم','yataqaddam','progresser','progress'],['يتغير','yataghayar','changer','change'],['يتمنى','yatamanna','souhaiter','wish'],['يتوقع','yatawaqqa','anticiper','anticipate'],['يتطور','yatatatwar','évoluer','evolve'],['يتحقق','yatahaqaq','se réaliser','be achieved'],['يتحمل','yatahammal','supporter','bear'],['يحتاج','yahtaj','avoir besoin','need'],['يختار','yakhtar','choisir','choose'],['يحترم','yahtarim','respecter','respect'],['يحقق','yuhaqqiq','accomplir','accomplish'],['يحسن','yuhsin','améliorer','improve'],['يحل','yahull','résoudre','solve'],['يحفظ','yahfaz','préserver','preserve'],['يداوي','yudawi','soigner','heal'],['يدرس','yadrus','étudier','study'],['يدعو','yaduu','inviter','invite'],['يذكر','yadhkur','rappeler','remember'],['يرتقي','yartaqi','s\'élever','rise'],['يرشد','yarshud','guider','guide'],['يرفع','yarfa','élever','elevate'],['يرى الحقيقة','yara alhaqiqa','voir la vérité','see the truth'],['يزرع','yazra','cultiver','cultivate'],['يزيد','yazid','augmenter','increase'],['يساعد','yusaid','aider','help'],['يساهم','yusahim','contribuer','contribute'],['يسبح','yasibah','nager','swim'],['يسعد','yusid','rendre heureux','make happy'],['يستمع','yastami','écouter','listen'],['يشارك','yusharik','participer','participate'],['يشعر','yashur','ressentir','feel'],['يصبر','yasbur','patienter','be patient'],['يصنع','yasna','fabriquer','manufacture'],['يضحك','yadhak','rire','laugh'],['يطمح','yatmah','aspirer','aspire'],['يعبر','yubir','exprimer','express'],['يعطي','yuati','donner','give'],['يعيش','yaish','vivre','live'],['يغفر','yaghfir','pardonner','forgive'],['يقود','yaqud','diriger','lead'],['يقوم بـ','yaqum bi','effectuer','perform'],['يكافح','yukafih','lutter','struggle'],['يكتشف','yaktashif','découvrir','discover'],['يناضل','yunadil','combattre','fight'],['ينجح','yunajjah','réussir','succeed'],['ينضج','yanadaj','mûrir','mature'],['يوم القيامة','yawm alqiyama','jour du jugement','day of judgment'],['يوم الوطن','yawm alwatan','jour de la patrie','national day'],['يوم العلم','yawm alilm','journée du savoir','knowledge day'],['يوم الأم','yawm alumm','fête des mères','mothers\' day'],['يوم الطفل','yawm altifl','journée de l\'enfant','children\'s day'],['يوم التحرير','yawm altahrir','jour de libération','liberation day'],['يوم الاستقلال','yawm alistiqllal','jour d\'indépendance','independence day'],['يد بيد','yad bi yad','main dans la main','hand in hand'],['يقين راسخ','yaqin rasikh','certitude ferme','firm certainty'],['ينبوع الحكمة','yanbuu alhikma','source de sagesse','source of wisdom'],['يتيم الوطن','yatim alwatan','orphelin de la patrie','orphan of homeland'],['ياسمين الحب','yasmin alhubb','jasmin de l\'amour','jasmine of love'],['يد العون','yad alawn','main secourable','helping hand'],['يوم مشرق','yawm mushriq','jour ensoleillé','sunny day'],['يسعى للأفضل','yasia lilafddal','aspirer au meilleur','aspire for better']],
+};
+window._premiumLoaded=true;
+</script>
+</body>
+</html>
